@@ -1,0 +1,57 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+{% load form_filters %}
+
+{% block head_title %}{% trans "Edit Project" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+
+
+  <div class="w3-container w3-margin-top">
+      <h2 class="w3-text-teal">Create / Update Project</h2>
+      <form method="post" class="w3-container w3-card-4 w3-light-grey w3-padding-large w3-margin-top">
+          {% csrf_token %}
+          <div class="w3-margin-bottom">
+              <label for="id_projectmanager" class="w3-text-teal">Project Manager</label>
+              {{ form.projectmanager|add_class:"w3-input w3-border w3-round" }}
+          </div>
+          <div class="w3-margin-bottom">
+              <label for="id_name" class="w3-text-teal">Project Name</label>
+              {{ form.name|add_class:"w3-input w3-border w3-round" }}
+          </div>
+          <div class="w3-margin-bottom">
+              <label for="id_description" class="w3-text-teal">Description</label>
+              {{ form.description|add_class:"w3-input w3-border w3-round" }}
+          </div>
+          <div class="w3-row-padding w3-margin-bottom">
+              <div class="w3-half">
+                  <label for="id_start_date" class="w3-text-teal">Start Date</label>
+                  {{ form.start_date|add_class:"w3-input w3-border w3-round" }}
+              </div>
+              <div class="w3-half">
+                  <label for="id_end_date" class="w3-text-teal">End Date</label>
+                  {{ form.end_date|add_class:"w3-input w3-border w3-round" }}
+              </div>
+          </div>
+          <div class="w3-margin-bottom">
+              <label for="id_project_status" class="w3-text-teal">Status</label>
+              {{ form.project_status|add_class:"w3-select w3-border w3-round" }}
+          </div>
+          <div class="w3-margin-bottom">
+              <label for="id_businessunit" class="w3-text-teal">Business Unit</label>
+              {{ form.businessunit|add_class:"w3-select w3-border w3-round" }}
+          </div>
+          <button type="submit" class="w3-button w3-teal w3-round-large w3-margin-top">Save</button>
+      </form>
+  </div>
+
+    {% if request.user.is_anonymous %}
+        <p class="w3-left"><a class="w3-button w3-green w3-padding-large w3-large w3-margin-top" href="{% url 'account_login' %}">LOGIN</a></p>
+    {% endif %}
+    <br>
+  </div>
+{% endblock %}

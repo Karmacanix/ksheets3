@@ -1,0 +1,44 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Project List" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+  <header class="w3-black w3-opacity w3-padding-16">
+    <h1 class="w3-margin">Projects</h1>
+  </header>
+   
+    <br>
+    <h3>Project List</h3>
+    <table class="w3-table-all w3-hoverable w3-card-4">
+      <thead>
+        <tr class="w3-light-grey">
+          <th>{% trans "Name" %}</th>
+          <th>{% trans "Project Manager" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Business Unit" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+        <tr>
+          <td><a href="{% url 'project:project_update' project.name %}">{{ project.name }}</a></td>
+          <td>{{ project.projectmanager }}</td>
+          <td>{{ project.project_status }}</td>
+          <td>{{ project.businessunit }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>    
+  
+    {% if request.user.is_anonymous %}
+    <p class="w3-left"><a class="w3-button w3-green w3-padding-large w3-large w3-margin-top" href="{% url 'account_login' %}">LOGIN</a></p>
+    {% endif %}
+    <br>
+  </div>
+{% endblock %}

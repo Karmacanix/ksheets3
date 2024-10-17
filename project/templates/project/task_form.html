@@ -1,0 +1,30 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+{% load form_filters %}
+
+{% block head_title %}{% trans "Add/edit Task" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+
+<h2>Add Tasks for {{ project.name }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <table>
+        {% for form in formset %}
+            <tr>
+                <td>{{ form.title.label }} {{ form.title }} {{ form.title.errors }}</td>
+                <td>{{ form.description.label }} {{ form.description }} {{ form.description.errors }}</td>
+                <td>{{ form.due_date.label }} {{ form.due_date }} {{ form.due_date.errors }}</td>
+                <td>{{ form.completed.label }} {{ form.completed }} {{ form.completed.errors }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <button type="submit">Save Tasks</button>
+</form>
+<a href="{% url 'task_list' project.name %}">Back to Tasks</a>
+{% endblock %}

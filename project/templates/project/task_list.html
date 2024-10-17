@@ -1,0 +1,24 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Task List" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+  <header class="w3-black w3-opacity w3-padding-16">
+    <h1 class="w3-margin">Tasks</h1>
+  </header>
+
+{% block content %}
+<h2>Tasks for {{ project.name }}</h2>
+<ul>
+    {% for task in tasks %}
+        <li>{{ task.title }} - Due: {{ task.due_date }} - {% if task.completed %} Completed {% else %} Not Completed {% endif %}</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'task_create' project.name %}">Add New Task</a>
+{% endblock %}
