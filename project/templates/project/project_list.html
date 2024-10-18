@@ -21,16 +21,14 @@
           <th>{% trans "Name" %}</th>
           <th>{% trans "Project Manager" %}</th>
           <th>{% trans "Status" %}</th>
-          <th>{% trans "Business Unit" %}</th>
         </tr>
       </thead>
       <tbody>
         {% for project in projects %}
         <tr>
-          <td><a href="{% url 'project:project_update' project.name %}">{{ project.name }}</a></td>
+          <td><a href="{% url 'project:project_update' project.sequence_numbercode %}">{{project.sequence_numbercode}}:{{ project.name }}</a></td>
           <td>{{ project.projectmanager }}</td>
           <td>{{ project.project_status }}</td>
-          <td>{{ project.businessunit }}</td>
         </tr>
         {% endfor %}
       </tbody>

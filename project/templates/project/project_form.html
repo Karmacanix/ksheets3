@@ -21,7 +21,7 @@
           </div>
           <div class="w3-margin-bottom">
               <label for="id_name" class="w3-text-teal">Project Name</label>
-              {{ form.name|add_class:"w3-input w3-border w3-round" }}
+              {{project.sequence_numbercode}}{{ form.name|add_class:"w3-input w3-border w3-round" }}
           </div>
           <div class="w3-margin-bottom">
               <label for="id_description" class="w3-text-teal">Description</label>
@@ -40,10 +40,6 @@
           <div class="w3-margin-bottom">
               <label for="id_project_status" class="w3-text-teal">Status</label>
               {{ form.project_status|add_class:"w3-select w3-border w3-round" }}
-          </div>
-          <div class="w3-margin-bottom">
-              <label for="id_businessunit" class="w3-text-teal">Business Unit</label>
-              {{ form.businessunit|add_class:"w3-select w3-border w3-round" }}
           </div>
           <button type="submit" class="w3-button w3-teal w3-round-large w3-margin-top">Save</button>
       </form>

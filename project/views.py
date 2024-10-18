@@ -3,20 +3,14 @@ from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView
 from django.shortcuts import render, redirect
 from django.views import View
-from .models import Project, Task, BusinessUnit
+from .models import Project, Task
 from .forms import TaskForm, TaskFormSet, ProjectForm
 
 
 # Create your views here.
 class ProjectListView(ListView):
     model = Project
-    template_name = 'project_list.html'  # template for the list view
-    context_object_name = 'projects'  # custom name for context
-
-    # def get_context_data(self, **kwargs):
-    #     context = super(ProjectListView, self).get_context_data(**kwargs)
-    #     context['project_list'] = Project.objects.all()
-    #     return context
+    template_name = 'project/project_list.html'  
     
 
 class ProjectCreateView(CreateView):
@@ -29,29 +23,39 @@ class ProjectCreateView(CreateView):
 class ProjectUpdateView(UpdateView):
     model = Project
     form_class = ProjectForm
-    template_name = 'project/project_form.html'  # template for the update form
-    success_url = reverse_lazy('project_list')  # redirect to list view on success
+    template_name = 'project/project_form.html'  
+    success_url = reverse_lazy('project_list') 
 
 
 class TaskListView(View):
-    def get(self, request, project_name):
-        project = Project.objects.get(name=project_name)
-        tasks = project.tasks.all()
-        return render(request, 'task_list.html', {'project': project, 'tasks': tasks})
+    model = Task
+    template_name = 'project/task_list.html'
+    
+    
+    def get(self, request, project):
+        project = Project.objects.get(id=project_id)
+        tasks = Task.objects.filter(project=project_id)
+        return render(request, 'project/task_list.html', {'project': project, 'tasks': tasks})
+
 
 class TaskCreateView(View):
-    def get(self, request, project_name):
-        project = Project.objects.get(name=project_name)
+    model = Task
+    form_class = TaskForm
+    template_name = 'project/task_form.html'
+    success_url = reverse_lazy('task_list')
+    
+    def get(self, request, project):
+        project = Project.objects.get(id=project_id)
         formset = TaskFormSet(queryset=Task.objects.none())
-        return render(request, 'task_form.html', {'project': project, 'formset': formset})
+        return render(request, 'project/task_form.html', {'project': project, 'formset': formset})
 
-    def post(self, request, project_name):
-        project = Project.objects.get(name=project_name)
+    def post(self, request, project):
+        project = Project.objects.get(id=project_id)
         formset = TaskFormSet(request.POST)
         if formset.is_valid():
             tasks = formset.save(commit=False)
             for task in tasks:
-                task.project = project  # Associate the task with the project
+                task.project = project_id  # Associate the task with the project
                 task.save()
-            return redirect('task_list', project_name=project_name)
-        return render(request, 'task_form.html', {'project': project, 'formset': formset})
+            return redirect('project/task_list', project_id=project_id)
+        return render(request, 'project/task_form.html', {'project': project, 'formset': formset})

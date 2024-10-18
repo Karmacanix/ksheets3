@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 from pathlib import Path
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -39,12 +40,14 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'mysite',
     'project',
+    'dotenv',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_select2",
     'allauth',
     'allauth.account',
 ]

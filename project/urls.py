@@ -23,7 +23,7 @@ app_name = 'project'
 urlpatterns = [
     path('projects/', ProjectListView.as_view(), name='project_list'),
     path('projects/create/', ProjectCreateView.as_view(), name='project_create'),
-    path('projects/update/<str:pk>/', ProjectUpdateView.as_view(), name='project_update'),
-    path('projects/<str:project_name>/tasks/', TaskListView.as_view(), name='task_list'),
-    path('projects/<str:project_name>/tasks/create/', TaskCreateView.as_view(), name='task_create'),
+    path('projects/update/<int:id>/', ProjectUpdateView.as_view(), name='project_update'),
+    path('projects/<int:project_id>/tasks/', TaskListView.as_view(), name='task_list'),
+    path('projects/<int:project_id>/tasks/create/', TaskCreateView.as_view(), name='task_create'),
 ]
