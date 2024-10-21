@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django_select2",
     'allauth',
     'allauth.account',
+    'psycopg2',
 ]
 
 MIDDLEWARE = [

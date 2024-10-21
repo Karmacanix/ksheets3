@@ -24,9 +24,9 @@
         </tr>
       </thead>
       <tbody>
-        {% for project in projects %}
+        {% for project in project_list %}
         <tr>
-          <td><a href="{% url 'project:project_update' project.sequence_numbercode %}">{{project.sequence_numbercode}}:{{ project.name }}</a></td>
+          <td><a href="{% url 'project:project_update' project.id %}">{{project.id}}:{{ project.name }}</a></td>
           <td>{{ project.projectmanager }}</td>
           <td>{{ project.project_status }}</td>
         </tr>

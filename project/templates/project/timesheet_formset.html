@@ -1,0 +1,60 @@
+<!-- templates/timesheet/timesheet_formset.html -->
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Timesheets" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+  <header class="w3-black w3-opacity w3-padding-16">
+    <h1 class="w3-margin">Timesheets</h1>
+  </header>
+   
+  <br>
+  <h3>Timesheet for the week starting {{ week_start_date|date:"l, jS F Y." }}</h3>
+
+  <!-- Navigation Arrows -->
+  <a href="?week_offset={{ week_offset|add:-1 }}" class="w3-btn w3-red"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i>  Previous Week</a>
+  <a href="?week_offset={{ week_offset|add:1 }}" class="w3-btn w3-red">Next Week  <i class="fa fa-arrow-circle-right" aria-hidden="true"></i></a>
+  <br> <br>
+  <div class="w3-card-4 w3-padding">
+  <form method="POST">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {{ formset.non_form_errors.as_ul }}
+    <table id="formset" class="form">
+      {% for form in formset.forms %}
+        {% if forloop.first %}
+          <thead><tr>
+            {% for field in form.visible_fields %}
+              <th>{{ field.label|capfirst }}</th>
+            {% endfor %}
+          </tr></thead>
+        {% endif %}
+        <tr class="{% cycle row1 row2 %}">
+          {% for field in form.visible_fields %}
+            <td>
+              {# Include the hidden fields in the form #}
+              {% if forloop.first %}
+                {% for hidden in form.hidden_fields %}
+                  {{ hidden }}
+                {% endfor %}
+              {% endif %}
+                {{ field.errors.as_ul }}
+                {{ field }}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+    <br>
+    <button class="w3-btn w3-large w3-border w3-red" type="submit">Save</button>
+  </form> 
+</div>
+</div>
+  
+{% endblock %}

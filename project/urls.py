@@ -17,13 +17,13 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from .views import ProjectListView, ProjectUpdateView, ProjectCreateView, TaskListView, TaskCreateView
+from .views import ProjectListView, ProjectUpdateView, ProjectCreateView, timesheet_view
+
 
 app_name = 'project'
 urlpatterns = [
     path('projects/', ProjectListView.as_view(), name='project_list'),
     path('projects/create/', ProjectCreateView.as_view(), name='project_create'),
-    path('projects/update/<int:id>/', ProjectUpdateView.as_view(), name='project_update'),
-    path('projects/<int:project_id>/tasks/', TaskListView.as_view(), name='task_list'),
-    path('projects/<int:project_id>/tasks/create/', TaskCreateView.as_view(), name='task_create'),
+    path('projects/update/<int:pk>/', ProjectUpdateView.as_view(), name='project_update'),
+    path('timesheet/', timesheet_view, name='timesheet_view'),
 ]

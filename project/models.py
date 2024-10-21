@@ -52,5 +52,5 @@ class Timesheet(models.Model):
     hours = models.DecimalField(max_digits=5, decimal_places=2)
 
     def __str__(self):
-        return f'{self.user.username} - {self.project.name} - {self.task.name} - {self.date}'
+        return f'{self.user.username} - {self.project.name} - {self.task.name} - {self.date} - {self.hours}'
 
