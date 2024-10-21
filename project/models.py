@@ -2,6 +2,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from customer.models import Customer
 
 
 # Create your models here.
@@ -12,6 +13,7 @@ class Project(models.Model):
     description = models.TextField()
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='projects')
     PROJECT_STATUS_CHOICES = (
         ('N', 'New'),
         ('W', 'In Progress'),

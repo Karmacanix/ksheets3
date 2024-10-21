@@ -21,6 +21,7 @@ def customer_create(request):
 # View to update an existing customer
 def customer_update(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
+    projects = customer.projects.all()
     if request.method == 'POST':
         form = CustomerForm(request.POST, instance=customer)
         if form.is_valid():
@@ -28,7 +29,7 @@ def customer_update(request, pk):
             return redirect('customer_list')
     else:
         form = CustomerForm(instance=customer)
-    return render(request, 'customers/customer_form.html', {'form': form})
+    return render(request, 'customers/customer_form.html', {'form': form, 'projects': projects})
 
 # View to delete a customer
 def customer_delete(request, pk):
@@ -37,4 +38,12 @@ def customer_delete(request, pk):
         customer.delete()
         return redirect('customer_list')
     return render(request, 'customers/customer_confirm_delete.html', {'customer': customer})
+
+# List all projects of a specific customer
+def customer_project_list(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    projects = customer.projects.all()
+    return render(request, 'projects/customer_project_list.html', {'customer': customer, 'projects': projects})
+
+
 

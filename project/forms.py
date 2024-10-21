@@ -121,6 +121,7 @@ class ProjectForm(forms.ModelForm):
             'start_date', 
             'end_date', 
             'project_status', 
+            'customer',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'w3-input w3-border w3-round', 'placeholder': 'Enter project name'}),
@@ -129,6 +130,7 @@ class ProjectForm(forms.ModelForm):
             'end_date': forms.DateInput(attrs={'class': 'w3-input w3-border w3-round', 'type': 'date'}),
             'project_status': forms.Select(attrs={'class': 'w3-select w3-border w3-round'}),
             'projectmanager': forms.Select(attrs={'class': 'w3-input w3-border w3-round'}),
+            'customer': forms.Select(attrs={'class': 'w3-select w3-border w3-round'}),
         }
 
 

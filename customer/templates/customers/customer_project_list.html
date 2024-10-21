@@ -1,0 +1,22 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Customer Project List" %}{% endblock %}
+
+{% block content %}
+<h2>Projects for {{ customer.name }}</h2>
+<a href="{% url 'project_create' customer.id %}">Add New Project</a>
+<ul>
+    {% for project in projects %}
+    <li>
+        {{ project.name }} - {{ project.status }} - 
+        <a href="{% url 'project_update' project.pk %}">Edit</a> | 
+        <a href="{% url 'project_delete' project.pk %}">Delete</a>
+    </li>
+    {% endfor %}
+</ul>
+<a href="{% url 'customer_list' %}">Back to Customers</a>
+{% endblock %}

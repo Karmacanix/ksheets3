@@ -11,20 +11,23 @@
 <!-- Header -->
 <div class="w3-container w3-margin-top">
     <header class="w3-black w3-opacity w3-padding-16">
-      <h1 class="w3-margin">Customers</h1>
+        <h1 class="w3-margin">Customers</h1>
     </header>
-     
     <br>
-<h2>Customers</h2>
-<a href="{% url 'customer:customer_create' %}">Add New Customer</a>
-<ul>
-    {% for customer in customers %}
-    <li>
-        {{ customer.name }} - {{ customer.email }} - 
-        <a href="{% url 'customer:customer_update' customer.pk %}">Edit</a> | 
-        <a href="{% url 'customer:customer_delete' customer.pk %}">Delete</a>
-    </li>
-    {% endfor %}
-</ul>
+    <h2>Customer List</h2>
+    <a class="w3-button w3-text-red w3-ripple w3-padding w3-border w3-border-red" href="{% url 'customer:customer_create' %}">Add New Customer</a>           
+    <br>
+    <br>
+    <ul>
+        {% for customer in customers %}
+            <li>{{ customer.name }} - 
+                {{ customer.email }} - 
+                <a class="w3-button w3-text-green w3-ripple w3-padding w3-border w3-border-green w3-small" 
+                    href="{% url 'customer:customer_update' customer.pk %}">Edit</a> - 
+                <a class="w3-button w3-text-red w3-ripple w3-padding w3-border w3-border-red w3-small" 
+                    href="{% url 'customer:customer_delete' customer.pk %}">Delete</a>
+            </li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}
