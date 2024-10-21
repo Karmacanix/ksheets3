@@ -40,6 +40,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'mysite',
     'project',
+    'customer',
     'dotenv',
     "django.contrib.admin",
     "django.contrib.auth",

@@ -1,0 +1,30 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Customer List" %}{% endblock %}
+
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+    <header class="w3-black w3-opacity w3-padding-16">
+      <h1 class="w3-margin">Customers</h1>
+    </header>
+     
+    <br>
+<h2>Customers</h2>
+<a href="{% url 'customer:customer_create' %}">Add New Customer</a>
+<ul>
+    {% for customer in customers %}
+    <li>
+        {{ customer.name }} - {{ customer.email }} - 
+        <a href="{% url 'customer:customer_update' customer.pk %}">Edit</a> | 
+        <a href="{% url 'customer:customer_delete' customer.pk %}">Delete</a>
+    </li>
+    {% endfor %}
+</ul>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Customer" %}{% endblock %}
+
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+    <header class="w3-black w3-opacity w3-padding-16">
+      <h1 class="w3-margin">Customer</h1>
+    </header>
+     
+    <br>
+<h2>{{ form.instance.pk|yesno:"Edit,Add New" }} Customer</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+<a href="{% url 'customer:customer_list' %}">Back to Customer List</a>
+</div>
+{% endblock %}

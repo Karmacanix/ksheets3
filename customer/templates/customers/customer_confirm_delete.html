@@ -1,0 +1,26 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Delete" %}{% endblock %}
+
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+    <header class="w3-black w3-opacity w3-padding-16">
+      <h1 class="w3-margin">Delete</h1>
+    </header>
+     
+    <br>
+<h2>Delete Customer</h2>
+<p>Are you sure you want to delete {{ customer.name }}?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+</form>
+<a href="{% url 'customer:customer_list' %}">Cancel</a>
+</div>
+{% endblock %}

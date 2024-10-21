@@ -34,6 +34,7 @@ fieldset.inlineLabels ul {list-style:none}
     {% if request.user.is_authenticated %}
       <a href="{% url 'project:project_list' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Projects</a>
       <a href="{% url 'project:timesheet_view' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Timesheets</a>
+      <a href="{% url 'customer:customer_list' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Customers</a>
     {% endif %}
     {% if request.user.is_superuser %}
       <a href="{% url 'admin:index' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Admin</a>

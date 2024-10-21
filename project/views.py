@@ -101,8 +101,6 @@ def timesheet_view(request):
         extra=week_data.count(),
         can_delete=True
     )
-    print(week_data)
-    print("count: ",week_data.count())
     
     if request.method == 'POST':
         formset = TimesheetFormSet(request.POST, week_data=week_data)
