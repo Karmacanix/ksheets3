@@ -10,14 +10,19 @@
   {% block extra_head %}{% endblock %}
 </head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fira+Sans+Extra+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bebas+Neue">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif}
 .w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+h2, thead, th, tfoot {font-family: "Bebas Neue", sans-serif}
+body,h3,h4,h5,h6,tr,td {font-family: "Fira Sans Extra Condensed", sans-serif}
 .fa-anchor,.fa-coffee {font-size:200px}
 fieldset.inlineLabels ul {list-style:none}
 </style>
@@ -30,19 +35,20 @@ fieldset.inlineLabels ul {list-style:none}
 <div class="w3-top">
   <div class="w3-bar w3-red w3-card w3-left-align w3-large">
     <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-    <a href="{% url 'home' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Home</a>
+    <a href="{% url 'home' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" style="text-shadow:1px 1px 0 #444">Home</a>
     {% if request.user.is_authenticated %}
-      <a href="{% url 'project:project_list' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Projects</a>
-      <a href="{% url 'project:timesheet_view' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Timesheets</a>
-      <a href="{% url 'customer:customer_list' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Customers</a>
+      <a href="{% url 'project:project_list' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" style="text-shadow:1px 1px 0 #444">Projects</a>
+      <a href="{% url 'project:timesheet_list' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" style="text-shadow:1px 1px 0 #444">Timesheets</a>
+      <a href="{% url 'customer:customer_list' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" style="text-shadow:1px 1px 0 #444">Customers</a>
+      <a href="{% url 'user_profile' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" style="text-shadow:1px 1px 0 #444">Profile</a>
     {% endif %}
     {% if request.user.is_superuser %}
-      <a href="{% url 'admin:index' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Admin</a>
+      <a href="{% url 'admin:index' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" style="text-shadow:1px 1px 0 #444">Admin</a>
     {% endif %}
     {% if user.is_authenticated %}
-      <a href="{% url 'account_logout' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Logout</a>
+      <a href="{% url 'account_logout' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" style="text-shadow:1px 1px 0 #444">Logout</a>
     {% else %}
-      <a href="{% url 'account_login' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Login</a>
+      <a href="{% url 'account_login' %}" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" style="text-shadow:1px 1px 0 #444">Login</a>
     {% endif %}
   </div>
 

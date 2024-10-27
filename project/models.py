@@ -52,7 +52,8 @@ class Timesheet(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     date = models.DateField()
     hours = models.DecimalField(max_digits=5, decimal_places=2)
+    start_of_week = models.DateField()
 
     def __str__(self):
-        return f'{self.user.username} - {self.project.name} - {self.task.name} - {self.date} - {self.hours}'
+        return f'{self.user.username} - {self.project.name} - {self.task.name} - {self.date} - {self.hours} - {self.start_of_week}'
 

@@ -1,0 +1,55 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "User" %}{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="w3-margin-top">
+    <header class="w3-black w3-opacity w3-padding-16">
+        <h1 class="w3-margin">User profile</h1>
+    </header>
+    <div class="w3-sidebar w3-bar-block w3-gray w3-collapse w3-opacity w3-padding-16 w3-card-4" style="width:200px;">
+        <h5 class="w3-padding">Menu</h5>
+        <a href="#" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Change Password</a>
+        <a href="#" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Reset Password</a>
+        <a href="#" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Subscription</a>
+    </div>
+    <div class="w3-container w3-half">
+        <div class="w3-main" style="margin-left:200px">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <h3>Update details</h3>
+            <form method="post" class="w3-grey w3-padding w3-round w3-border w3-card-4" action="{% url 'user_profile' %}">
+                {% csrf_token %}
+                {{ profile_form.as_p }}
+                <button type="submit" name="update_profile" class="w3-btn w3-border w3-round w3-red"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
+            </form>
+
+            {% comment %} <h3>Change Password</h3>
+            <form method="post" action="{% url 'user_profile' %}">
+                {% csrf_token %}
+                {{ password_form.as_p }}
+                <button type="submit" name="change_password" class="btn btn-warning">Change Password</button>
+            </form>
+
+            <h3>Group Memberships</h3>
+            <ul>
+                {% for group in groups %}
+                    <li>{{ group.name }}</li>
+                {% empty %}
+                    <li>You are not a member of any groups.</li>
+                {% endfor %}
+            </ul> {% endcomment %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
-from mysite.views import home
+from mysite.views import home, user_profile_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),    
@@ -25,6 +25,7 @@ urlpatterns = [
     # path('assessment/', include('assessment.urls')),
     # path('select2/', include('django_select2.urls')),
     path('', home, name='home'),
+    path('profile/', user_profile_view, name='user_profile'),
     path('customer/', include('customer.urls')),
     path('project/', include('project.urls')),
     path("select2/", include("django_select2.urls")),

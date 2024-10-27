@@ -1,21 +1,30 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 from django.contrib.auth.models import User
-from django.db.models import Sum
-from django.forms import inlineformset_factory
+from django.core.paginator import Paginator
+from django.db.models import Count, Sum
+from django.db.models.query import QuerySet
+from django.forms import inlineformset_factory, modelformset_factory, formset_factory
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views.generic import ListView, UpdateView
 from django.views.generic.edit import CreateView, FormView
+from collections import defaultdict
 from .models import Project, Task, Timesheet
 from .forms import TaskFormSet, ProjectForm, TimesheetForm, BaseWeekTimesheetFormSet
 
-# Create your views here.
-def get_week_start(date):
-    # Function to get the start of the week (Monday)
-    start = date - timedelta(days=date.weekday())
-    return start
+
+def get_monday_of_week(given_date):
+    # Ensure given_date is a datetime.date object
+    if not isinstance(given_date, date):
+        raise ValueError("The given_date must be a valid datetime.date object")
+
+    # Calculate the difference between the given date and the Monday of that week
+    days_to_monday = given_date.weekday()  # Monday is 0, Sunday is 6
+    monday=given_date-timedelta(days=days_to_monday)
+    
+    return monday
 
 
 class ProjectListView(ListView):
@@ -76,43 +85,154 @@ class ProjectUpdateView(UpdateView):
             return self.form_invalid(form)
 
 
-def timesheet_view(request):
-    # Get current date and handle week navigation
-    week_offset = int(request.GET.get('week_offset', 0))
-    current_date = datetime.today() + timedelta(weeks=week_offset)
-    week_start = get_week_start(current_date) # Function to get the start of the week (Monday)
-    end_week = week_start + timedelta(days=4)
+class TimesheetView(ListView):
+    model = Timesheet
+    template_name = 'project/timesheet_formset.html'
     
-    week_data = (
-        Timesheet.objects
-        .filter(date__range=[week_start, end_week])
-        .order_by('date')
-        .values('user', 'project', 'task', 'date')
-        .annotate(hours=Sum('hours'))
-    )
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['user'] = user
+
+        # Get the start date of the week from the URL or default to the current week start
+        week_start = self.kwargs.get('week_start')
+        if week_start:
+            week_start = date.fromisoformat(week_start)
+        else:
+            week_start = get_monday_of_week(date.today())
+        context['week_start'] = week_start
+
+        # Calculate end date of the week
+        end_date = week_start + timedelta(days=6)
+
+        # Fetch timesheet entries for the user for the specified week
+        week_data = Timesheet.objects.filter(
+            user=user,
+            date__range=[week_start, end_date]
+        ).select_related('project', 'task').values(
+            'project', 'task', 'date', 'hours'
+        ).order_by('date')
+        
+        # Group data by project and task with weekday hours
+        grouped_weeks = defaultdict(lambda: defaultdict(dict))
+        weekday_map = ['monday_hours', 'tuesday_hours', 'wednesday_hours', 
+                       'thursday_hours', 'friday_hours', 'saturday_hours', 'sunday_hours']
+
+        for entry in week_data:
+            weekday = entry['date'].weekday()
+            project = entry['project']
+            task = entry['task']
+            hours = entry['hours']
+            grouped_weeks[project][task][weekday_map[weekday]] = hours
+
+        # Prepare initial data for the formset
+        initial_data = [
+            {'project': project, 'task': task, **hours_data}
+            for project, tasks in grouped_weeks.items()
+            for task, hours_data in tasks.items()
+        ]
+        
+        # Setup the formset
+        TimesheetFormSet = formset_factory(TimesheetForm, extra=1, can_delete=True)
+        if self.request.method == 'POST':
+            formset = TimesheetFormSet(self.request.POST)
+            if formset.is_valid():
+                for form in formset:
+                    timesheet_instance = form.save(commit=False)
+                    timesheet_instance.user = user
+                    timesheet_instance.date = week_start
+                    timesheet_instance.save()
+                return redirect(reverse('project:timesheet_view', kwargs={'week_start': week_start.isoformat()}))
+        else:
+            formset = TimesheetFormSet(initial=initial_data)
+
+        # Add formset to context
+        context['formset'] = formset
+        return context
     
-    # Create the formset factory
-    TimesheetFormSet = inlineformset_factory(
-        User, 
-        Timesheet,
-        form=TimesheetForm,
-        formset=BaseWeekTimesheetFormSet,
-        fields=('user', 'project', 'task'),
-        extra=week_data.count(),
-        can_delete=True
-    )
     
-    if request.method == 'POST':
-        formset = TimesheetFormSet(request.POST, week_data=week_data)
-        if formset.is_valid():
-            formset.save(user=request.user, week_start=week_start)
-            return redirect('project:timesheet_view')
-    else:
-        formset = TimesheetFormSet(week_data=week_data)
-    
-    context = {
-        'formset': formset,
-        'week_start_date': week_start,
-        'week_offset': week_offset
+def timesheet_list_view(request):
+    user = request.user
+    page = int(request.GET.get('page', 1))  # Get the current page from query params, default is 1
+    weeks_per_page = 4  # Number of weeks per page
+
+    # Fetch all timesheets for the user, grouped by week, including related project and task names
+    timesheets = Timesheet.objects.filter(user=user).select_related('project', 'task').values(
+        'project__name', 'task__name', 'date'
+    ).annotate(
+        hours=Sum('hours')
+    ).order_by('date')
+
+    # Group by week start dates, then by project and task
+    grouped_weeks = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+    weekday_map = {
+        0: 'monday_hours',
+        1: 'tuesday_hours',
+        2: 'wednesday_hours',
+        3: 'thursday_hours',
+        4: 'friday_hours',
+        5: 'saturday_hours',
+        6: 'sunday_hours'
     }
-    return render(request, 'project/timesheet_formset.html', context)
+
+    for entry in timesheets:
+        date_of_entry = entry['date']
+        weekday = date_of_entry.weekday()
+        project_name = entry['project__name']
+        task_name = entry['task__name']
+        hours = entry['hours']
+
+        # Determine week start (Monday)
+        week_start = date_of_entry - timedelta(days=weekday)
+
+        # Group data
+        grouped_weeks[week_start][project_name][task_name][weekday_map[weekday]] = hours
+
+    # Convert grouped data to a list of weeks
+    weekly_timesheets = []
+    for week_start, projects in grouped_weeks.items():
+        week_data = {
+            'week_start': week_start,
+            'projects': [],
+            'total_hours': 0,
+            'weekday_totals': {day: 0 for day in weekday_map.values()}  # Initialize weekday totals
+        }
+        
+        for project_name, tasks in projects.items():
+            project_data = {'project': project_name, 'tasks': [], 'project_total_hours': 0}
+            
+            for task_name, hours in tasks.items():
+                task_data = {'task': task_name, **hours}
+
+                # Sum up task hours for this project
+                task_total = sum(hours.get(day, 0) for day in weekday_map.values() if day in hours)
+                task_data['task_total_hours'] = task_total
+                project_data['project_total_hours'] += task_total
+
+                # Update the weekly totals for each day
+                for day, day_hours in hours.items():
+                    week_data['weekday_totals'][day] += day_hours
+                project_data['tasks'].append(task_data)
+            
+            # Add project total to week total
+            week_data['total_hours'] += project_data['project_total_hours']
+            week_data['projects'].append(project_data)
+
+        weekly_timesheets.append(week_data)
+
+    # Order weeks by start date for pagination
+    weekly_timesheets.sort(key=lambda x: x['week_start'], reverse=True)
+
+    # Paginate weeks
+    paginator = Paginator(weekly_timesheets, weeks_per_page)
+    paginated_weeks = paginator.get_page(page)
+
+    context = {
+        'weekly_timesheets': paginated_weeks,
+        'page': page,
+        'has_next': paginated_weeks.has_next(),
+        'has_previous': paginated_weeks.has_previous(),
+        'next_page_number': paginated_weeks.next_page_number() if paginated_weeks.has_next() else None,
+        'previous_page_number': paginated_weeks.previous_page_number() if paginated_weeks.has_previous() else None
+    }
+    return render(request, 'project/timesheet_list.html', context)

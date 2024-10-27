@@ -17,18 +17,22 @@
     <h3>Project List</h3>
     <table class="w3-table-all w3-hoverable w3-card-4">
       <thead>
-        <tr class="w3-light-grey">
+        <tr class="w3-topbar w3-bottombar w3-border-gray w3-pale-red">
+          <th>{% trans "ID" %}</th>
           <th>{% trans "Name" %}</th>
           <th>{% trans "Project Manager" %}</th>
           <th>{% trans "Status" %}</th>
+          <th>{% trans "Customer" %}</th>
         </tr>
       </thead>
       <tbody>
         {% for project in project_list %}
         <tr>
-          <td><a href="{% url 'project:project_update' project.id %}">{{project.id}}:{{ project.name }}</a></td>
+          <td>{{project.id}}</td>
+          <td><a href="{% url 'project:project_update' project.id %}">{{ project.name }}</a></td>
           <td>{{ project.projectmanager }}</td>
-          <td>{{ project.project_status }}</td>
+          <td>{{ project.get_project_status_display }}</td>
+          <td>{{ project.customer }}</td>
         </tr>
         {% endfor %}
       </tbody>

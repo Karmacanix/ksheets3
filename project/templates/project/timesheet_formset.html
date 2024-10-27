@@ -11,121 +11,163 @@
 <!-- Header -->
 <div class="w3-container w3-margin-top">
   <header class="w3-black w3-opacity w3-padding-16">
-    <h1 class="w3-margin">Timesheets</h1>
+    <h1 class="w3-margin">Your weekly timesheet</h1>
   </header>
-   
   <br>
-  <h3>Timesheet for the week starting {{ week_start_date|date:"l, jS F Y." }}</h3>
-
-  <!-- Navigation Arrows -->
-  <a href="?week_offset={{ week_offset|add:-1 }}" class="w3-btn w3-red"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i>  Previous Week</a>
-  <a href="?week_offset={{ week_offset|add:1 }}" class="w3-btn w3-red">Next Week  <i class="fa fa-arrow-circle-right" aria-hidden="true"></i></a>
-  <br> <br>
-  <div class="w3-card-4 w3-padding">
-  <form method="POST">
-    {% csrf_token %}
-    {{ formset.management_form }}
-    {{ formset.non_form_errors.as_ul }}
-    <table id="formset" class="form">
-      {% for form in formset.forms %}
-        {% if forloop.first %}
-          <thead><tr>
-            {% for field in form.visible_fields %}
-              <th>{{ field.label|capfirst }}</th>
-            {% endfor %}
-          </tr></thead>
-        {% endif %}
-        <tbody>
-        <tr class="{% cycle row1 row2 %}">
-          {% for field in form.visible_fields %}
-            <td>
-              {# Include the hidden fields in the form #}
-              {% if forloop.first %}
-                {% for hidden in form.hidden_fields %}
-                  {{ hidden }}
+  <h2>Week starting: {{ week_start|date:"l, jS F Y." }}</h2>
+  <div id="timesheet-forms">
+    <!-- Existing forms with the class "timesheet-form" -->
+    <div class="timesheet-form">
+      <form method="POST" class="w3-card-4">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        {{ formset.non_form_errors.as_ul }}
+        <table id="formset" class="w3-table">
+          {% for form in formset.forms %}
+            {% if forloop.first %}
+              <thead><tr class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue w3-text-blue">
+                {% for field in form.visible_fields %}
+                  <th>{{ field.label|capfirst }}</th>
                 {% endfor %}
-              {% endif %}
-                {{ field.errors.as_ul }}
-                {{ field }}
-            </td>
+              </tr></thead>
+            {% endif %}
+            <tbody>
+            <tr class="{% cycle row1 row2 %}">
+              {% for field in form.visible_fields %}
+                <td>
+                  {# Include the hidden fields in the form #}
+                  {% if forloop.first %}
+                    {% for hidden in form.hidden_fields %}
+                      {{ hidden }}
+                    {% endfor %}
+                  {% endif %}
+                    {{ field.errors.as_ul }}
+                    {{ field }}
+                </td>
+              {% endfor %}
+            </tr>
+          </tbody>
           {% endfor %}
-        </tr>
-      </tbody>
-      {% endfor %}
-      <script>
-        // Function to sum hours for each weekday
-        function calculateTotals() {
-            let mondayTotal = 0;
-            let tuesdayTotal = 0;
-            let wednesdayTotal = 0;
-            let thursdayTotal = 0;
-            let fridayTotal = 0;
-    
-        // Get the total number of forms
-        const totalForms = document.getElementById('id_timesheet_set-TOTAL_FORMS').value;
-
-        // Loop through each form in the formset
-        for (let i = 0; i < totalForms; i++) {
-            // Get the value for monday_hours, tuesday_hours, etc. for each form
-            const mondayHours = parseFloat(document.getElementById(`id_timesheet_set-${i}-monday_hours`).value) || 0;
-            const tuesdayHours = parseFloat(document.getElementById(`id_timesheet_set-${i}-tuesday_hours`).value) || 0;
-            const wednesdayHours = parseFloat(document.getElementById(`id_timesheet_set-${i}-wednesday_hours`).value) || 0;
-            const thursdayHours = parseFloat(document.getElementById(`id_timesheet_set-${i}-thursday_hours`).value) || 0;
-            const fridayHours = parseFloat(document.getElementById(`id_timesheet_set-${i}-friday_hours`).value) || 0;
-
-            // Add the hours to the respective totals
-            mondayTotal += mondayHours;
-            tuesdayTotal += tuesdayHours;
-            wednesdayTotal += wednesdayHours;
-            thursdayTotal += thursdayHours;
-            fridayTotal += fridayHours;
-        }
-
-        // Helper function to update the total and change color based on value
-        function updateTotalDisplay(dayTotal, elementId) {
-          const element = document.getElementById(elementId);
-          element.innerText = dayTotal.toFixed(2);
-
-          // Set the color to red if the total exceeds 24 hours, otherwise set to black
-          if (dayTotal > 24) {
-              element.style.color = "red";
-          } else {
-              element.style.color = "black"; // or the default color
-          }
-        }
-
-        // Update the totals in the DOM with the helper function
-        updateTotalDisplay(mondayTotal, 'monday_total');
-        updateTotalDisplay(tuesdayTotal, 'tuesday_total');
-        updateTotalDisplay(wednesdayTotal, 'wednesday_total');
-        updateTotalDisplay(thursdayTotal, 'thursday_total');
-        updateTotalDisplay(fridayTotal, 'friday_total');
-        }
-
-        // Run the calculation function on page load
-        window.onload = calculateTotals;
-
-        // Add event listeners to all inputs to recalculate totals when values change
-        document.querySelectorAll('input[type="number"]').forEach(function(input) {
-            input.addEventListener('input', calculateTotals);
-        });
-      </script>
-      <tfoot>
-        <tr>
-            <td> </td>
-            <td class="w3-right-align"><strong>Subtotal Hours:</strong></td>
-            <td class="w3-right-align"><strong><span id="monday_total">0</span></strong></td>
-            <td class="w3-right-align"><strong><span id="tuesday_total">0</span></strong></td>
-            <td class="w3-right-align"><strong><span id="wednesday_total">0</span></strong></td>
-            <td class="w3-right-align"><strong><span id="thursday_total">0</span></strong></td>
-            <td class="w3-right-align"><strong><span id="friday_total">0</span></strong></td>
-        </tr>
-      </tfoot>
-    </table>
+          <tfoot>
+            <tr id="totals" class="w3-topbar w3-bottombar w3-border-green w3-pale-green w3-text-green">
+                <td><strong>Totals:</strong></td>
+                <td><strong><span id="week-total">0</span></strong></td>
+                <td><strong><span id="monday-total">{{ weekday_totals.0 }}</span></strong></td>
+                <td><strong><span id="tuesday-total">{{ weekday_totals.1 }}</span></strong></td>
+                <td><strong><span id="wednesday-total">{{ weekday_totals.2 }}</span></strong></td>
+                <td><strong><span id="thursday-total">{{ weekday_totals.3 }}</span></strong></td>
+                <td><strong><span id="friday-total">{{ weekday_totals.4 }}</span></strong></td>
+                <td><strong><span id="saturday-total">{{ weekday_totals.5 }}</span></strong></td>
+                <td><strong><span id="sunday-total">{{ weekday_totals.6 }}</span></strong></td>
+                <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </form> 
     <br>
-    <button class="w3-btn w3-large w3-border w3-red" type="submit">Save</button>
-  </form> 
+    <a href="{% url 'project:timesheet_list' %}" class="w3-btn w3-border w3-blue" type="button" id="back"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
+    <button class="w3-btn w3-border w3-green" type="button" id="add-more"><i class="fa fa-plus" aria-hidden="true"></i> Add</button>
+    <button class="w3-btn w3-border w3-red" type="button"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>
+    <button class="w3-btn w3-border w3-indigo" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
+  {% comment %} <td><strong><span id=monday_total+tuesday_total+wednesday_total+thursday_total+friday_total+saturday_total+sunday_total {% endcomment %}
+  </div>
 </div>
 </div>
-  
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const weekdayMap = ["monday_hours", "tuesday_hours", "wednesday_hours", "thursday_hours", "friday_hours", "saturday_hours", "sunday_hours"];
+
+    function updateTotals() {
+        let weekTotal = 0;
+        let dayTotals = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+
+        // Loop over all form indices
+        document.querySelectorAll('[id^="id_form-"]').forEach(input => {
+            // Check if the input corresponds to a weekday field
+            weekdayMap.forEach((day, index) => {
+                if (input.id.endsWith(day)) {
+                    const hours = parseFloat(input.value) || 0;
+                    weekTotal += hours;
+                    dayTotals[index] += hours;
+                }
+            });
+        });
+
+        // Update the weekly total
+        const weekTotalElement = document.getElementById("week-total");
+        if (weekTotalElement) {
+            weekTotalElement.innerText = weekTotal.toFixed(2);
+            weekTotalElement.style.color = weekTotal >= 24 ? "red" : "green";
+        }
+
+        // Update each weekday total and apply color coding
+        weekdayMap.forEach((day, index) => {
+            const dayTotalElement = document.getElementById(`${day.split('_')[0]}-total`);
+            if (dayTotalElement) {
+                dayTotalElement.innerText = dayTotals[index].toFixed(2);
+                dayTotalElement.style.color = dayTotals[index] >= 24 ? "red" : "green";
+            }
+        });
+    }
+
+    // Attach event listeners to all weekday input fields
+    document.querySelectorAll('[id^="id_form-"]').forEach(input => {
+        if (weekdayMap.some(day => input.id.endsWith(day))) {
+            input.addEventListener('input', updateTotals);
+        }
+    });
+
+    // Run totals calculation on page load
+    updateTotals();
+});
+
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const formContainer = document.getElementById("timesheet-forms");
+    const addMoreButton = document.getElementById("add-more");
+    const totalFormsInput = document.querySelector("form-TOTAL_FORMS");
+
+    // Event listener for adding new form rows to the formset
+    addMoreButton.addEventListener("click", function() {
+        const currentFormCount = parseInt(totalFormsInput);
+        const newFormCount = currentFormCount + 1;
+
+        // Clone the last form element to use as a template
+        const lastForm = formContainer.querySelector(".timesheet-form:last-child");
+        const newForm = lastForm.cloneNode(true);
+
+        // Update the form index in the cloned form's input fields
+        newForm.querySelectorAll("input, select, label").forEach(element => {
+            if (element.hasAttribute("id")) {
+                element.id = element.id.replace(`id_form-${currentFormCount - 1}-`, `id_form-${currentFormCount}-`);
+            }
+            if (element.hasAttribute("name")) {
+                element.name = element.name.replace(`form-${currentFormCount - 1}-`, `form-${currentFormCount}-`);
+            }
+            if (element.tagName === "INPUT") {
+                element.value = "";  // Clear input values for the new form
+            }
+        });
+
+        // Append the new form to the container
+        formContainer.appendChild(newForm);
+        totalFormsInput.value = newFormCount;  // Update TOTAL_FORMS count
+    });
+
+    function isFormEmpty(formIndex) {
+        const hourFields = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day =>
+            document.querySelector(`#id_form-${formIndex}-${day}_hours`)
+        );
+
+        return hourFields.every(field => !field || field.value === "" || field.value === "0");
+    }
+
+    function updateTotalDisplay(totalHours, elementId) {
+        const element = document.getElementById(elementId);
+        element.innerText = totalHours.toFixed(2);
+        element.style.color = totalHours > 24 ? "red" : "black";
+    }
+  });
+</script>
 {% endblock %}
