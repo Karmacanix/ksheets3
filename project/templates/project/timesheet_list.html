@@ -16,10 +16,10 @@
     <br>
     {% for week_data in weekly_timesheets %}
         <div class="week-section">
-            <a href="{% url 'project:timesheet_view' week_data.week_start %}" class="w3-text-indigo"><h2>Week Starting: {{ week_data.week_start|date:"l, jS F Y."  }}</h2></a>
+            <a href="{% url 'project:timesheet_view' week_data.week_start %}"><h2>Week Starting: {{ week_data.week_start|date:"l, jS F Y."  }}</h2></a>
             <table class="timesheet-table w3-table-all w3-hoverable w3-card-4 ">
                 <thead>
-                    <tr class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue w3-text-blue">
+                    <tr class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue">
                         <th>Project</th>
                         <th>Task</th>
                         <th>Monday</th>
@@ -52,22 +52,24 @@
                 </tbody>
                 <tfoot>
                     <tr class="w3-topbar w3-bottombar w3-border-green w3-pale-green">
-                        <td class="w3-right-align">Weekday subtotals</td>
-                        <td class="w3-left-align">+ weekly total:</td>
-                        <td>{% if week_data.weekday_totals.monday_hours < 24 %}<span class="w3-text-green">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.monday_hours|default:"0" }}</strong></span></td>
-                        <td>{% if week_data.weekday_totals.tuesday_hours < 24 %}<span class="w3-text-green">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.tuesday_hours|default:"0" }}</strong></span></td>
-                        <td>{% if week_data.weekday_totals.wednesday_hours < 24 %}<span class="w3-text-green">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.wednesday_hours|default:"0" }}</strong></span></td>
-                        <td>{% if week_data.weekday_totals.thursday_hours < 24 %}<span class="w3-text-green">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.thursday_hours|default:"0" }}</strong></span></td>
-                        <td>{% if week_data.weekday_totals.friday_hours < 24 %}<span class="w3-text-green">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.friday_hours|default:"0" }}</strong></span></td>
-                        <td>{% if week_data.weekday_totals.saturday_hours < 24 %}<span class="w3-text-green">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.saturday_hours|default:"0" }}</strong></span></td>
-                        <td>{% if week_data.weekday_totals.sunday_hours < 24 %}<span class="w3-text-green">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.sunday_hours|default:"0" }}</strong></span></td>
-                        <td>{% if week_data.total_hours < 168 %}<span class="w3-text-green">{% else %}<span class="w3-text-red">{% endif %}<strong>{{  week_data.total_hours }}</strong></span></td>
+                        <td class="w3-right-align"><strong>Weekday subtotals</strong></td>
+                        <td class="w3-left-align"><strong>+ weekly total:</strong></td>
+                        <td>{% if week_data.weekday_totals.monday_hours < 24 %}<span class="w3-text-black">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.monday_hours|default:"0" }}</strong></span></td>
+                        <td>{% if week_data.weekday_totals.tuesday_hours < 24 %}<span class="w3-text-black">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.tuesday_hours|default:"0" }}</strong></span></td>
+                        <td>{% if week_data.weekday_totals.wednesday_hours < 24 %}<span class="w3-text-black">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.wednesday_hours|default:"0" }}</strong></span></td>
+                        <td>{% if week_data.weekday_totals.thursday_hours < 24 %}<span class="w3-text-black">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.thursday_hours|default:"0" }}</strong></span></td>
+                        <td>{% if week_data.weekday_totals.friday_hours < 24 %}<span class="w3-text-black">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.friday_hours|default:"0" }}</strong></span></td>
+                        <td>{% if week_data.weekday_totals.saturday_hours < 24 %}<span class="w3-text-black">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.saturday_hours|default:"0" }}</strong></span></td>
+                        <td>{% if week_data.weekday_totals.sunday_hours < 24 %}<span class="w3-text-black">{% else %}<span class="w3-text-red">{% endif %}<strong>{{ week_data.weekday_totals.sunday_hours|default:"0" }}</strong></span></td>
+                        <td>{% if week_data.total_hours < 168 %}<span class="w3-text-black">{% else %}<span class="w3-text-red">{% endif %}<strong>{{  week_data.total_hours }}</strong></span></td>
                     </tr>
                 </tfoot>
             </table>
             {% comment %} <a href="{% url 'project:timesheet_detail' week_start=week_data.week_start %}" class="details-link">View Details</a> {% endcomment %}
         </div>
+        <br/><br/>
     {% endfor %}
+    <br/><br/>
 </div>
 <!-- Pagination Controls -->
 <div class="pagination">

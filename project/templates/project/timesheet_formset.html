@@ -4,7 +4,6 @@
 {% load static %}
 {% load account %}
 {% load i18n %}
-
 {% block head_title %}{% trans "Timesheets" %}{% endblock %}
 
 {% block content %}
@@ -13,66 +12,140 @@
   <header class="w3-black w3-opacity w3-padding-16">
     <h1 class="w3-margin">Your weekly timesheet</h1>
   </header>
-  <br>
-  <h2>Week starting: {{ week_start|date:"l, jS F Y." }}</h2>
-  <div id="timesheet-forms">
-    <!-- Existing forms with the class "timesheet-form" -->
-    <div class="timesheet-form">
-      <form method="POST" class="w3-card-4">
+  <br/>
+  <div class="w3-bar w3-border w3-indigo w3-card-4">
+    <a href="{% url 'project:timesheet_list' %}" style="width:10%; font-size: 24px;" class="w3-bar-item w3-button w3-mobile w3-bebas-neue"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
+    <a href="#" style="width:80%; font-size: 24px;" class="w3-bar-item w3-button w3-mobile w3-bebas-neue w3-pale-blue">Week starting: {{ week_start|date:"l, jS F Y." }}</a>
+    <a href="#" style="width:10%; font-size: 24px;" class="w3-bar-item w3-button w3-mobile w3-bebas-neue" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
+  </div>
+  <br/>
+  <!-- Existing forms with the class "timesheet-form" -->
+    
+      <form method="POST" action="{% url 'project:timesheet_view' week_start %}" class="w3-card-4">
         {% csrf_token %}
         {{ formset.management_form }}
         {{ formset.non_form_errors.as_ul }}
-        <table id="formset" class="w3-table">
-          {% for form in formset.forms %}
-            {% if forloop.first %}
-              <thead><tr class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue w3-text-blue">
+        <table class="w3-table">
+        {% for form in formset.forms %}
+          {% if forloop.first %}
+            <thead>
+              <tr class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue">
                 {% for field in form.visible_fields %}
+                  {% if forloop.last %}
+                    <th class="w3-center">Add new</th>
+                    <th class="w3-center">Delete</th>
+                  {% endif %}
                   <th>{{ field.label|capfirst }}</th>
                 {% endfor %}
-              </tr></thead>
-            {% endif %}
-            <tbody>
-            <tr class="{% cycle row1 row2 %}">
-              {% for field in form.visible_fields %}
-                <td>
-                  {# Include the hidden fields in the form #}
-                  {% if forloop.first %}
-                    {% for hidden in form.hidden_fields %}
-                      {{ hidden }}
-                    {% endfor %}
-                  {% endif %}
-                    {{ field.errors.as_ul }}
-                    {{ field }}
-                </td>
-              {% endfor %}
+              </tr>
+            </thead>
+          {% endif %}
+            <tbody class="timesheet-formset-container" id="timesheet-formset-container">
+              <tr class="{% cycle row1 row2 %}timesheet-form" id="timesheet-form">
+                {% for field in form.visible_fields %}
+                    {% if forloop.last %}
+                    <td>
+                      <a href="#" id="add-form-btn" name="add-form-btn" class="w3-button">
+                        <span class="w3-text-green">
+                          <i class="fa fa-plus fa-2" aria-hidden="true"></i> add</span></a>
+                    </td>
+                    <td>
+                      <a href="#" id="remove-form-btn" name="remove-form-btn" class="w3-button">
+                        <span class="w3-text-red">
+                          <i class="fa fa-trash fa-2" aria-hidden="true"></i></span></a>
+                    </td>
+                    {% endif %}
+                    <td>
+                      {# Include the hidden fields in the form #}
+                      {% if forloop.first %}
+                        {% for hidden in form.hidden_fields %}
+                          {{ hidden }}
+                        {% endfor %}
+                      {% endif %}
+                      {{ field.errors.as_ul }}
+                      {{ field }}
+                    </td>
+                {% endfor %}
+              </tr>
+            </tbody>
+        {% endfor %}
+        <tbody>
+        <tr class="w3-bar w3-border-green w3-pale-green">
+          <a href="#" id="add-form-btn" name="add-form-btn" class="w3-bar-item w3-button w3-mobile ">
+            <span class="w3-text-green">
+              <i class="fa fa-plus fa-2" aria-hidden="true"></i> add</span></a>
             </tr>
           </tbody>
-          {% endfor %}
-          <tfoot>
-            <tr id="totals" class="w3-topbar w3-bottombar w3-border-green w3-pale-green w3-text-green">
-                <td><strong>Totals:</strong></td>
-                <td><strong><span id="week-total">0</span></strong></td>
-                <td><strong><span id="monday-total">{{ weekday_totals.0 }}</span></strong></td>
-                <td><strong><span id="tuesday-total">{{ weekday_totals.1 }}</span></strong></td>
-                <td><strong><span id="wednesday-total">{{ weekday_totals.2 }}</span></strong></td>
-                <td><strong><span id="thursday-total">{{ weekday_totals.3 }}</span></strong></td>
-                <td><strong><span id="friday-total">{{ weekday_totals.4 }}</span></strong></td>
-                <td><strong><span id="saturday-total">{{ weekday_totals.5 }}</span></strong></td>
-                <td><strong><span id="sunday-total">{{ weekday_totals.6 }}</span></strong></td>
-                <td></td>
-            </tr>
-          </tfoot>
+        <tfoot>
+          <tr id="totals" class="w3-topbar w3-bottombar w3-border-green w3-pale-green">
+              <td><strong>Totals:</strong></td>
+              <td class="w3-padding"><strong><span id="week-total">0</span></strong></td>
+              <td class="w3-padding"><strong><span id="monday-total">{{ weekday_totals.0 }}</span></strong></td>
+              <td class="w3-padding"><strong><span id="tuesday-total">{{ weekday_totals.1 }}</span></strong></td>
+              <td class="w3-padding"><strong><span id="wednesday-total">{{ weekday_totals.2 }}</span></strong></td>
+              <td class="w3-padding"><strong><span id="thursday-total">{{ weekday_totals.3 }}</span></strong></td>
+              <td class="w3-padding"><strong><span id="friday-total">{{ weekday_totals.4 }}</span></strong></td>
+              <td class="w3-padding"><strong><span id="saturday-total">{{ weekday_totals.5 }}</span></strong></td>
+              <td class="w3-padding"><strong><span id="sunday-total">{{ weekday_totals.6 }}</span></strong></td>
+              <td></td><td></td><td></td>
+          </tr>
+        </tfoot>
         </table>
       </form> 
-    <br>
-    <a href="{% url 'project:timesheet_list' %}" class="w3-btn w3-border w3-blue" type="button" id="back"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
-    <button class="w3-btn w3-border w3-green" type="button" id="add-more"><i class="fa fa-plus" aria-hidden="true"></i> Add</button>
-    <button class="w3-btn w3-border w3-red" type="button"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>
-    <button class="w3-btn w3-border w3-indigo" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
-  {% comment %} <td><strong><span id=monday_total+tuesday_total+wednesday_total+thursday_total+friday_total+saturday_total+sunday_total {% endcomment %}
-  </div>
+      <br/>
+   
+    </div>
+  <br/>
+  {{ serviceFormset.empty_form }}
+  
+
+{% comment %} <button class="w3-btn w3-border w3-green" type="button" id="add-form-btn" name="add-form-btn"><i class="fa fa-plus" aria-hidden="true"></i> Add</button>
+    <button class="w3-btn w3-border w3-red" type="button" id="remove-form-btn" name="remove-form-btn"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button><td><strong><span id=monday_total+tuesday_total+wednesday_total+thursday_total+friday_total+saturday_total+sunday_total {% endcomment %}
+{% comment %} $('#timesheet-forms tbody tr').formset(); {% endcomment %}
+{% comment %} <script src="{% static '/js/django-dynamic-formset.js' %}"></script> {% endcomment %}
 </div>
-</div>
+<script>
+  $(document).ready(function () {
+    $('#add-form-btn').click(function () {
+        // Get the formset container
+        const formsetContainer = $('.timesheet-formset-container');
+
+        // Get the current number of forms in the formset
+        const totalForms = $('#id_form-TOTAL_FORMS');
+        const formCount = parseInt(totalForms.val());
+
+        // Clone the last form in the formset
+        const newForm = formsetContainer.find('.timesheet-form:last').clone(true);
+
+        // Update each field in the new form
+        newForm.find(':input').each(function () {
+            const name = $(this).attr('name');
+            if (name) {
+                // Update name attribute
+                const newName = name.replace(/-\d+-/, `-${formCount}-`);
+                $(this).attr('name', newName);
+
+                // Update id attribute
+                const id = $(this).attr('id');
+                const newId = id.replace(/-\d+-/, `-${formCount}-`);
+                $(this).attr('id', newId);
+
+                // Clear the value only for daily hours fields
+                if (name.includes('hours')) {  // Adjust this if your hour fields use another keyword
+                    $(this).val('');
+                }
+            }
+        });
+
+        // Increment the total form count
+        totalForms.val(formCount + 1);
+
+        // Append the new form to the formset container
+        formsetContainer.append(newForm);
+    });
+});
+
+</script>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const weekdayMap = ["monday_hours", "tuesday_hours", "wednesday_hours", "thursday_hours", "friday_hours", "saturday_hours", "sunday_hours"];
@@ -120,54 +193,52 @@
     // Run totals calculation on page load
     updateTotals();
 });
-
 </script>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const formContainer = document.getElementById("timesheet-forms");
-    const addMoreButton = document.getElementById("add-more");
-    const totalFormsInput = document.querySelector("form-TOTAL_FORMS");
+{% comment %} <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const timesheetFormContainer = document.getElementById("timesheet-formset");
+  const addMoreButton = document.getElementById("add-more");
+  const totalFormsInput = document.querySelector("input[name='form-TOTAL_FORMS']");
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
-    // Event listener for adding new form rows to the formset
-    addMoreButton.addEventListener("click", function() {
-        const currentFormCount = parseInt(totalFormsInput);
-        const newFormCount = currentFormCount + 1;
+  addMoreButton.addEventListener("click", () => {
+      const currentFormCount = parseInt(totalFormsInput.value);
+      const lastForm = timesheetFormContainer.querySelector(".timesheet-form:last-child");
 
-        // Clone the last form element to use as a template
-        const lastForm = formContainer.querySelector(".timesheet-form:last-child");
-        const newForm = lastForm.cloneNode(true);
+      // Clone the last form element and clear its input values
+      const newForm = lastForm.cloneNode(true);
+      newForm.querySelectorAll("input, select, label").forEach(element => {
+        const idOrName = element.hasAttribute("id") ? "id" : element.hasAttribute("name") ? "name" : null;
 
-        // Update the form index in the cloned form's input fields
-        newForm.querySelectorAll("input, select, label").forEach(element => {
-            if (element.hasAttribute("id")) {
-                element.id = element.id.replace(`id_form-${currentFormCount - 1}-`, `id_form-${currentFormCount}-`);
-            }
-            if (element.hasAttribute("name")) {
-                element.name = element.name.replace(`form-${currentFormCount - 1}-`, `form-${currentFormCount}-`);
-            }
-            if (element.tagName === "INPUT") {
-                element.value = "";  // Clear input values for the new form
-            }
-        });
+        if (idOrName) {
+            // Update the form index in id and name attributes to match the new form count
+            element[idOrName] = element[idOrName].replace(`form-${currentFormCount - 1}`, `form-${currentFormCount}`);
+        }
+        
+        // Clear input values for the new form
+        if (element.tagName === "INPUT") element.value = "";
+      });
 
-        // Append the new form to the container
-        formContainer.appendChild(newForm);
-        totalFormsInput.value = newFormCount;  // Update TOTAL_FORMS count
-    });
-
-    function isFormEmpty(formIndex) {
-        const hourFields = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day =>
-            document.querySelector(`#id_form-${formIndex}-${day}_hours`)
-        );
-
-        return hourFields.every(field => !field || field.value === "" || field.value === "0");
-    }
-
-    function updateTotalDisplay(totalHours, elementId) {
-        const element = document.getElementById(elementId);
-        element.innerText = totalHours.toFixed(2);
-        element.style.color = totalHours > 24 ? "red" : "black";
-    }
+      // Append the new form to the formset container
+      timesheetFormContainer.appendChild(newForm);
+      totalFormsInput.value = currentFormCount + 1; // Update total form count
   });
-</script>
+
+  // Optional: function to check if form is empty (for validation purposes)
+  const isFormEmpty = formIndex => days.every(day => {
+      const field = document.querySelector(`#id_form-${formIndex}-${day}_hours`);
+      return !field || !field.value || field.value === "0";
+  });
+
+  // Optional: function to update total display and apply styling based on threshold
+  const updateTotalDisplay = (totalHours, elementId) => {
+      const element = document.getElementById(elementId);
+      if (element) {
+          element.innerText = totalHours.toFixed(2);
+          element.style.color = totalHours > 24 ? "red" : "black";
+      }
+  };
+});
+
+</script> {% endcomment %}
 {% endblock %}

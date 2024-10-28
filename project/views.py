@@ -85,9 +85,10 @@ class ProjectUpdateView(UpdateView):
             return self.form_invalid(form)
 
 
-class TimesheetView(ListView):
+class TimesheetView(FormView):
     model = Timesheet
     template_name = 'project/timesheet_formset.html'
+    form_class = TimesheetForm
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -133,23 +134,42 @@ class TimesheetView(ListView):
         ]
         
         # Setup the formset
-        TimesheetFormSet = formset_factory(TimesheetForm, extra=1, can_delete=True)
+        TimesheetFormSet = formset_factory(TimesheetForm, extra=0, can_delete=True)
         if self.request.method == 'POST':
             formset = TimesheetFormSet(self.request.POST)
             if formset.is_valid():
                 for form in formset:
-                    timesheet_instance = form.save(commit=False)
-                    timesheet_instance.user = user
-                    timesheet_instance.date = week_start
-                    timesheet_instance.save()
-                return redirect(reverse('project:timesheet_view', kwargs={'week_start': week_start.isoformat()}))
+                    if not form.has_changed():
+                        continue
+                    
+                    project = form.cleaned_data.get('project')
+                    task = form.cleaned_data.get('task')
+                    
+                    for day_index, day_field in enumerate(['monday_hours', 'tuesday_hours', 'wednesday_hours', 
+                                                       'thursday_hours', 'friday_hours', 'saturday_hours', 
+                                                       'sunday_hours']):
+                        hours = form.cleaned_data.get(day_field)
+                        if hours:
+                            entry_date = week_start + timedelta(days=day_index)
+                        
+                            Timesheet.objects.update_or_create(
+                                user=user,
+                                project=project,
+                                task=task,
+                                date=entry_date,
+                                start_of_week=week_start,
+                                defaults={'hours': hours}
+                            )
+                            
+            return redirect('project:timesheet_view', week_start=str(week_start))
+    
         else:
             formset = TimesheetFormSet(initial=initial_data)
 
         # Add formset to context
         context['formset'] = formset
         return context
-    
+
     
 def timesheet_list_view(request):
     user = request.user
