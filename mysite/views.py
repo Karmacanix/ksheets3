@@ -1,3 +1,5 @@
+from django.views.generic import TemplateView
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import PasswordChangeForm 
@@ -61,4 +63,34 @@ class PasswordChangeView(LoginRequiredMixin, FormView):
         def form_valid(self, form):
             form.save()
             update_session_auth_hash(self.request, form.user)        
-            return super(PasswordChangeView, self).form_valid(form)    
+            return super(PasswordChangeView, self).form_valid(form)
+        
+
+class GroupMembershipView(LoginRequiredMixin, TemplateView):
+    template_name = "account/group_membership.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = get_object_or_404(User, username=self.request.user.username)
+        context['groups'] = user.groups.all()  # Accessing the user's groups
+        return context
+    
+
+class InviteView(LoginRequiredMixin, TemplateView):
+    template_name = "account/invites.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = get_object_or_404(User, username=self.request.user.username)
+        context['groups'] = user.groups.all()  # Accessing the user's groups
+        return context
+
+    
+class BillingView(LoginRequiredMixin, TemplateView):
+    template_name = "account/billing.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = get_object_or_404(User, username=self.request.user.username)
+        context['groups'] = user.groups.all()  # Accessing the user's groups
+        return context

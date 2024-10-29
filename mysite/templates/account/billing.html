@@ -4,7 +4,7 @@
 {% load account %}
 {% load i18n %}
 
-{% block head_title %}{% trans "User" %}{% endblock %}
+{% block head_title %}{% trans "Billing" %}{% endblock %}
 
 {% block content %}
 
@@ -18,12 +18,9 @@
                     <div class="alert alert-{{ message.tags }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
-            <h2>Update details</h2>
-            <form method="post" class="w3-padding w3-round w3-border w3-card-4" action="{% url 'mysite:user_profile' %}">
-                {% csrf_token %}
-                {{ profile_form.as_p }}
-                <button type="submit" name="update_profile" class="w3-btn w3-border w3-round w3-red"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
-            </form>
+
+            <h2>Billing details</h2>
+            
         </div>
     </div>
 </div>

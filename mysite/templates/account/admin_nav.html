@@ -1,0 +1,12 @@
+<header class="w3-black w3-opacity w3-padding-16">
+    <h1 class="w3-margin">Your profile</h1>
+</header>
+<div class="w3-sidebar w3-bar-block w3-gray w3-collapse w3-opacity w3-padding-16 w3-card-4" style="width:200px;">
+    <h5 class="w3-padding">Menu</h5>
+    <a href="{% url 'mysite:user_profile' %}" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Update details</a>
+    <a href="{% url 'account_change_password' %}" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Change Password</a>
+    <a href="{% url 'account_reset_password' %}" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Reset Password</a>
+    <a href="{% url 'mysite:group_membership' %}" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Group membership</a>
+    <a href="{% url 'mysite:invites' %}" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Invite team members</a>
+    <a href="{% url 'mysite:billing' %}" class="w3-bar-item w3-button w3-teal w3-border-bottom w3-border-cyan">Billing</a>
+</div>
