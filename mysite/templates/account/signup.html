@@ -3,23 +3,24 @@
 {% load i18n %}
 {% load account %}
 
-{% block head_title %}{% trans "Sign Up" %}{% endblock %}
+{% block head_title %}{% trans "Sign up" %}{% endblock %}
 
 {% block content %}
-<div class="w3-container w3-half w3-margin-top">
-<header class="w3-container">
-  <h1>{% trans "Sign Up" %}</h1>
-</header>
+<div class="w3-container w3-margin-top">
+  <header class="w3-black w3-opacity w3-padding-16">
+    <h1 class="w3-margin">Sign-up</h1>
+  </header>
+  <br>
 
 <p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
 
-<form class="signup w3-container w3-card-4" id="signup_form" method="post" action="{% url 'account_signup' %}">
+<form class="signup w3-container w3-card-4 w3-half" id="signup_form" method="post" action="{% url 'account_signup' %}">
   {% csrf_token %}
   {% for field in form %}
   	
 		<p>{{ field }} - <small><b> Enter your {{ field.label|lower }}</b></small></p>
 	
-{% endfor %}
+  {% endfor %}
   
   {% if redirect_field_value %}
   <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />

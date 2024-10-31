@@ -118,13 +118,13 @@ TaskFormSet = inlineformset_factory(
 
 
 class TimesheetForm(forms.ModelForm):
-    monday_hours = CustomDecimalField(min_value=0, max_value=24, max_digits=5, decimal_places=2, required=False)
-    tuesday_hours = CustomDecimalField(min_value=0, max_value=24, max_digits=5, decimal_places=2, required=False)
-    wednesday_hours = CustomDecimalField(min_value=0, max_value=24, max_digits=5, decimal_places=2, required=False)
-    thursday_hours = CustomDecimalField(min_value=0, max_value=24, max_digits=5, decimal_places=2, required=False)
-    friday_hours = CustomDecimalField(min_value=0, max_value=24, max_digits=5, decimal_places=2, required=False)
-    saturday_hours = CustomDecimalField(min_value=0, max_value=24, max_digits=5, decimal_places=2, required=False)
-    sunday_hours = CustomDecimalField(min_value=0, max_value=24, max_digits=5, decimal_places=2, required=False)
+    monday_hours = CustomDecimalField(min_value=0, max_value=999, max_digits=5, decimal_places=2, required=False)
+    tuesday_hours = CustomDecimalField(min_value=0, max_value=999, max_digits=5, decimal_places=2, required=False)
+    wednesday_hours = CustomDecimalField(min_value=0, max_value=999, max_digits=5, decimal_places=2, required=False)
+    thursday_hours = CustomDecimalField(min_value=0, max_value=999, max_digits=5, decimal_places=2, required=False)
+    friday_hours = CustomDecimalField(min_value=0, max_value=999, max_digits=5, decimal_places=2, required=False)
+    saturday_hours = CustomDecimalField(min_value=0, max_value=999, max_digits=5, decimal_places=2, required=False)
+    sunday_hours = CustomDecimalField(min_value=0, max_value=999, max_digits=5, decimal_places=2, required=False)
     
     class Meta:
         model = Timesheet

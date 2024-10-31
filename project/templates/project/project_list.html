@@ -30,14 +30,16 @@
         <tr>
           <td>{{project.id}}</td>
           <td><a href="{% url 'project:project_update' project.id %}">{{ project.name }}</a></td>
-          <td>{{ project.projectmanager }}</td>
-          <td>{{ project.get_project_status_display }}</td>
+          <td>{{ project.projectmanager }}  </td>
+          <td>{% if project.get_project_status_display == "Closed" %}<span class="w3-tag w3-padding w3-round w3-red w3-center">{{ project.get_project_status_display }}</span>
+            {% elif project.get_project_status_display == "On Hold" %}<span class="w3-tag w3-padding w3-round w3-red w3-center">{{ project.get_project_status_display }}</span>
+            {% elif project.get_project_status_display == "New" %}<span class="w3-tag w3-padding w3-round w3-green w3-center">{{ project.get_project_status_display }}</span>
+            {% elif project.get_project_status_display == "In Progress" %}<span class="w3-tag w3-padding w3-round w3-green w3-center">{{ project.get_project_status_display }}</span>{% endif %}</td>
           <td>{{ project.customer }}</td>
         </tr>
         {% endfor %}
       </tbody>
-    </table>    
-  
+    </table>
     {% if request.user.is_anonymous %}
     <p class="w3-left"><a class="w3-button w3-green w3-padding-large w3-large w3-margin-top" href="{% url 'account_login' %}">LOGIN</a></p>
     {% endif %}

@@ -1,4 +1,3 @@
-<!-- templates/timesheet/timesheet_formset.html -->
 {% extends "mysite/site-base.html" %}
 
 {% load static %}
@@ -15,9 +14,9 @@
   <br/>
 
     <div class="w3-bar w3-border w3-indigo w3-card-4">
-      <button href="{% url 'project:timesheet_list' %}" style="width:10%; font-size: 24px;" class="w3-bar-item w3-block w3-mobile w3-bebas-neue w3-indigo"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>
-      <button href="#" style="width:80%; font-size: 24px;" class="w3-bar-item w3-block w3-mobile w3-bebas-neue w3-pale-blue">Week starting: {{ week_start|date:"l, jS F Y." }}</button>
-      <button href="#" style="width:10%; font-size: 24px;" class="w3-bar-item w3-block w3-mobile w3-bebas-neue w3-indigo" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
+      <a href="{% url 'project:timesheet_list' %}" style="width:10%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-indigo"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
+      <a href="#" style="width:80%; font-size: 24px;" class="w3-bar-item w3-block w3-button w3-mobile w3-bebas-neue w3-pale-blue">Week starting: {{ week_start|date:"l, jS F Y." }}</a>
+      <a href="#" style="width:10%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-indigo" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
     </div>
 
   <br/>
@@ -41,8 +40,10 @@
               </tr>
             </thead>
           {% endif %}
-            <tbody class="timesheet-formset-container" id="timesheet-formset-container" name="timesheet-formset-container">
-              <tr class="{% cycle row1 row2 %}timesheet-form" id="timesheet-form" name="timesheet-form">
+            <tbody>
+            {% comment %} <div id="timesheet-formset-container" class="timesheet-formset-container">
+            <div id="timesheet-form-{{ forloop.counter0 }}" class="timesheet-form"> {% endcomment %}
+              <tr class="{% cycle row1 row2 %}">
                 {% for field in form.visible_fields %}
                     {% if forloop.last %}
                     <td>
@@ -63,16 +64,15 @@
                     </td>
                 {% endfor %}
               </tr>
-              {% if forloop.last %}
-                <tr>
-                  <td>
-                    <a href="#" id="add-form-btn" name="add-form-btn" class="w3-bar w3-round w3-border-green w3-green w3-button w3-mobile">
-                      <i class="fa fa-plus fa-2" aria-hidden="true"></i> add</a>
-                  </td>
-                </tr>
-              {% endif %}
+        {% endfor %}
             </tbody>
             <tfoot>
+              <tr>
+                <td>
+                  <button id="#add-item-btn" name="#add-item-btn" class="w3-bar w3-round w3-border-green w3-green w3-button w3-mobile">
+                    <i class="fa fa-plus fa-2" aria-hidden="true"></i> add</button>
+                </td>
+              </tr>
               <tr id="totals" name="totals" class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue">
                   <td><strong>Totals:</strong></td>
                   <td class="w3-padding"><strong><span id="week-total">0</span></strong></td>
@@ -86,19 +86,16 @@
                   <td></td><td></td>
               </tr>
             </tfoot>
-        {% endfor %}
       </table>
     </form> 
   <br/>
 </div>
 <br/>
-  {{ formset.empty_form }}
-  
+<!-- Render empty form template for cloning -->
+<div id="empty-form" class="timesheet-form" style="display: none;">
+  {{ formset.empty_form.as_table }}
+</div>
 
-{% comment %} <button class="w3-btn w3-border w3-green" type="button" id="add-form-btn" name="add-form-btn"><i class="fa fa-plus" aria-hidden="true"></i> Add</button>
-    <button class="w3-btn w3-border w3-red" type="button" id="remove-form-btn" name="remove-form-btn"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button><td><strong><span id=monday_total+tuesday_total+wednesday_total+thursday_total+friday_total+saturday_total+sunday_total {% endcomment %}
-{% comment %} $('#timesheet-forms tbody tr').formset(); {% endcomment %}
-{% comment %} <script src="{% static '/js/django-dynamic-formset.js' %}"></script> {% endcomment %}
 </div>
 <script src="{% static 'js/timesheet.js' %}"></script>
 {% endblock %}

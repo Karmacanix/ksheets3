@@ -18,9 +18,34 @@
                     <div class="alert alert-{{ message.tags }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
-
-            <h2>Invite team members</h2>
-            
+            <h2>Invited Members</h2>
+            <table class="w3-table-all">
+                <tr>
+                    <td>Person</td>
+                    <td>Joined</td>
+                    <td>License End</td>
+                    <td>Renew?</td>
+                </tr>
+                <tr>
+                    <td>John Doe</td>
+                    <td>20/10/2024</td>
+                    <td>20/10/2025</td>
+                    <td>Yes</td>
+                </tr>
+            <table>
+            <h2>Invited Members</h2>
+            <form>
+                <input type="text" placeholder="Name" class="w3-input"/>
+                <input type="text" placeholder="Email" class="w3-input"/>
+                <input type="text" placeholder="Message" class="w3-input"/>
+                <button class="w3-btn w3-green">Send Invite</button>
+            </form>
+            <h3>Pending invites</h3>
+            <ul><li>John Doe, sent 29 Oct 2024</li></ul>
+            <h3>Expired invites</h3>
+            <ul><li>John Doe, expired 5th May 2024</li></ul>
+            <h3>Declined invites</h3>
+            <ul><li>John Doe, declined 12 Aug 2024</li></ul>          
         </div>
     </div>
 </div>

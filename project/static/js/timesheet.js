@@ -1,31 +1,25 @@
-$(document).ready(function () {
-    $(document).on('click', '#add-form-btn', function () {
-        const formsetContainer = $('.timesheet-formset-container');
-        const totalForms = $('#id_form-TOTAL_FORMS');
-        const formCount = parseInt(totalForms.val());
+document.addEventListener("DOMContentLoaded", function () {
+    const formsetContainer = document.getElementById("tbody");
+    const emptyFormTemplate = document.getElementById("empty-form");
+    const addItemBtn = document.getElementById("#add-item-btn");
+    const totalForms = document.querySelector("#id_form-TOTAL_FORMS");
 
-        const newForm = formsetContainer.find('.timesheet-form:first').clone(true);
+    addItemBtn.addEventListener("click", function () {
+        // Clone the empty form template
+        const newForm = emptyFormTemplate.cloneNode(true);
+        newForm.style.display = "block";
 
-        newForm.find(':input').each(function () {
-            const name = $(this).attr('name');
-            if (name) {
-                const newName = name.replace(/-\d+-/, `-${formCount}-`);
-                $(this).attr('name', newName);
+        // Get the current number of forms
+        const formCount = parseInt(totalForms.value);
 
-                const id = $(this).attr('id');
-                if (id) {
-                    const newId = id.replace(/-\d+-/, `-${formCount}-`);
-                    $(this).attr('id', newId);
-                }
+        // Update the new form's fields by replacing __prefix__ with formCount
+        newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formCount);
 
-                if (name.includes('hours')) {
-                    $(this).val('');
-                }
-            }
-        });
+        // Append the new form to the formset container
+        formsetContainer.appendChild(newForm);
 
-        totalForms.val(formCount + 1);
-        formsetContainer.append(newForm);
+        // Increment the total form count
+        totalForms.value = formCount + 1;
     });
 
     // Totals Calculation

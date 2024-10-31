@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Count, Sum
 from django.db.models.query import QuerySet
+from django.db import transaction
 from django.forms import inlineformset_factory, modelformset_factory, formset_factory
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -13,6 +14,7 @@ from django.views.generic.edit import CreateView, FormView
 from collections import defaultdict
 from .models import Project, Task, Timesheet
 from .forms import TaskFormSet, ProjectForm, TimesheetForm, BaseWeekTimesheetFormSet
+from decimal import Decimal
 
 
 def get_monday_of_week(given_date):
@@ -95,7 +97,6 @@ class TimesheetView(FormView):
         user = self.request.user
         context['user'] = user
 
-        # Get the start date of the week from the URL or default to the current week start
         week_start = self.kwargs.get('week_start')
         if week_start:
             week_start = date.fromisoformat(week_start)
@@ -103,21 +104,20 @@ class TimesheetView(FormView):
             week_start = get_monday_of_week(date.today())
         context['week_start'] = week_start
 
-        # Calculate end date of the week
         end_date = week_start + timedelta(days=6)
 
-        # Fetch timesheet entries for the user for the specified week
         week_data = Timesheet.objects.filter(
             user=user,
             date__range=[week_start, end_date]
         ).select_related('project', 'task').values(
             'project', 'task', 'date', 'hours'
         ).order_by('date')
-        
-        # Group data by project and task with weekday hours
+
         grouped_weeks = defaultdict(lambda: defaultdict(dict))
-        weekday_map = ['monday_hours', 'tuesday_hours', 'wednesday_hours', 
-                       'thursday_hours', 'friday_hours', 'saturday_hours', 'sunday_hours']
+        weekday_map = [
+            'monday_hours', 'tuesday_hours', 'wednesday_hours', 
+            'thursday_hours', 'friday_hours', 'saturday_hours', 'sunday_hours'
+        ]
 
         for entry in week_data:
             weekday = entry['date'].weekday()
@@ -126,50 +126,44 @@ class TimesheetView(FormView):
             hours = entry['hours']
             grouped_weeks[project][task][weekday_map[weekday]] = hours
 
-        # Prepare initial data for the formset
         initial_data = [
             {'project': project, 'task': task, **hours_data}
             for project, tasks in grouped_weeks.items()
             for task, hours_data in tasks.items()
         ]
-        
-        # Setup the formset
+
         TimesheetFormSet = formset_factory(TimesheetForm, extra=0, can_delete=True)
         if self.request.method == 'POST':
             formset = TimesheetFormSet(self.request.POST)
             if formset.is_valid():
+                timesheet_entries = []
                 for form in formset:
-                    if not form.has_changed():
-                        continue
-                    
-                    project = form.cleaned_data.get('project')
-                    task = form.cleaned_data.get('task')
-                    
-                    for day_index, day_field in enumerate(['monday_hours', 'tuesday_hours', 'wednesday_hours', 
-                                                       'thursday_hours', 'friday_hours', 'saturday_hours', 
-                                                       'sunday_hours']):
-                        hours = form.cleaned_data.get(day_field)
-                        if hours:
-                            entry_date = week_start + timedelta(days=day_index)
-                        
-                            Timesheet.objects.update_or_create(
-                                user=user,
-                                project=project,
-                                task=task,
-                                date=entry_date,
-                                start_of_week=week_start,
-                                defaults={'hours': hours}
+                    for day_key, offset in zip(weekday_map, range(7)):
+                        hours = form.cleaned_data.get(day_key)
+                        if hours is not None and hours > 0:
+                            field_date = week_start + timedelta(days=offset)
+                            timesheet_entries.append(
+                                Timesheet(
+                                    user=user, project=form.cleaned_data['project'], task=form.cleaned_data['task'], date=field_date, hours=hours, start_of_week=week_start
+                                    )
                             )
                             
-            return redirect('project:timesheet_view', week_start=str(week_start))
-    
+            Timesheet.objects.bulk_create(timesheet_entries)
+            # return redirect(reverse('project:timesheet_view', kwargs={'week_start': week_start.isoformat()}))
+
         else:
             formset = TimesheetFormSet(initial=initial_data)
 
-        # Add formset to context
+
         context['formset'] = formset
         return context
 
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        with transaction.atomic():
+            formset.save()
+            return super().form_valid(form)
     
 def timesheet_list_view(request):
     user = request.user
