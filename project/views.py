@@ -14,7 +14,7 @@ from django.views.generic import ListView, UpdateView, WeekArchiveView, MonthArc
 from django.views.generic.edit import CreateView, FormView
 from collections import defaultdict
 from .models import Project, Task, Timesheet
-from .forms import TaskFormSet, ProjectForm, TimesheetForm, BaseWeekTimesheetFormSet
+from .forms import TaskFormSet, ProjectForm, TimesheetForm
 from decimal import Decimal
 
 
@@ -322,8 +322,7 @@ class WeeklyTimesheetView(WeekArchiveView):
     allow_future = True
     allow_empty=True
     template_name = 'project/timesheet_archive_week.html'
-    TimesheetFormSet = modelformset_factory(Timesheet, form=TimesheetForm, extra=0)
-
+    TimesheetFormSet = formset_factory(TimesheetForm, extra=0, can_delete=True)
     
     def get_week_start(self):
         year_week_key = str(self.kwargs["year"]) + "-W" + str(self.kwargs["week"])
@@ -331,40 +330,35 @@ class WeeklyTimesheetView(WeekArchiveView):
         return week_start
     
     def get_weekly_timesheet_data(self, user, week_start):
-        weekly_data = {}
-        weekly_entries = Timesheet.objects.filter(user=user, start_of_week=week_start
-            ).values('project', 'task', 'date').annotate(total_hours=Sum('hours'))
+        grouped_weeks = defaultdict(lambda: defaultdict(dict))
+        weekday_map = [
+            'monday_hours', 'tuesday_hours', 'wednesday_hours', 
+            'thursday_hours', 'friday_hours', 'saturday_hours', 'sunday_hours'
+        ]
+        weekly_entries = Timesheet.objects.filter(
+            user=user,
+            start_of_week=week_start,
+        ).select_related('project', 'task').values(
+            'project', 'task', 'date'
+        ).annotate(total_hours=Sum('hours')).order_by('date')
+        
         for entry in weekly_entries:
+            weekday = entry['date'].weekday()
             project = entry['project']
             task = entry['task']
-            date = entry['date']
-            total_hours = entry['total_hours']
+            hours = entry['total_hours']
+            grouped_weeks[project][task][weekday_map[weekday]] = hours
 
-            if (project, task) not in weekly_data:
-                weekly_data[(project, task)] = {
-                    'project': project,
-                    'task': task,
-                    'monday_hours': None,
-                    'tuesday_hours': None,
-                    'wednesday_hours': None,
-                    'thursday_hours': None,
-                    'friday_hours': None,
-                    'saturday_hours': None,
-                    'sunday_hours': None,
-                }
-
-            day_name = date.strftime('%A').lower() + '_hours'
-            weekly_data[(project, task)][day_name] = total_hours
-            print(weekly_data)
-
-        return weekly_data
+        initial_data = [
+            {'project': project, 'task': task, **hours_data}
+            for project, tasks in grouped_weeks.items()
+            for task, hours_data in tasks.items()
+        ]
+        return initial_data
 
     def get_weekly_timesheet_formsets(self, user, week_start):
-        weekly_timesheet_data = self.get_weekly_timesheet_data(user, week_start)
-        print("Weekly Timesheet Data: ", weekly_timesheet_data)
-        queryset = self.get_queryset()
-        formset = self.TimesheetFormSet(queryset=queryset, initial=weekly_timesheet_data)
-
+        weekly_timesheet_data = self.get_weekly_timesheet_data(user=user, week_start=week_start)
+        formset = self.TimesheetFormSet(initial=weekly_timesheet_data)
         return formset
     
     def get_context_data(self, **kwargs):
@@ -373,7 +367,6 @@ class WeeklyTimesheetView(WeekArchiveView):
         context["weekly_timesheets"] = Timesheet.weekly.filter(start_of_week=week_start)
         user = self.request.user
         formset = self.get_weekly_timesheet_formsets(user, week_start)
-        print("Formset: ", formset)
         context["formset"] = formset
         return context  
     

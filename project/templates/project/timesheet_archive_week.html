@@ -15,104 +15,153 @@
     <div class="w3-bar w3-border w3-red w3-card-4">
         {% if previous_week %}
             <a href="{% url 'project:weekly_timesheet' year=previous_week|date:'Y' week=previous_week|date:'W' %}"
-            style="width:15%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-red"> 
+            style="width:20%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-red"> 
             <i class="fa fa-arrow-left" aria-hidden="true"></i> Previous Week ({{ previous_week|date:"W" }})</a>
         {% endif %}
-        <a href="#" style="width:70%; font-size: 24px;" class="w3-bar-item w3-block w3-button w3-mobile w3-bebas-neue w3-pale-red">
-            Week({{ week|date:"W" }}) Starting: {{ week|date:"l, jS F Y." }}</a>
+        <a href="#" style="width:60%; font-size: 24px;" class="w3-bar-item w3-block w3-button w3-mobile w3-bebas-neue w3-pale-red">
+            Week({{ week|date:"W" }}) Starts {{ week|date:"l, jS F Y." }}</a>
         {% if next_week %}
             <a href="{% url 'project:weekly_timesheet' year=next_week|date:'Y' week=next_week|date:'W' %}"
-            style="width:15%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-red"> 
-            <i class="fa fa-arrow-right" aria-hidden="true"></i> Next Week ({{ next_week|date:"W" }})</a>
+            style="width:20%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-red"> 
+             Next Week ({{ next_week|date:"W" }}) <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
         {% endif %}
     </div>
-    <div class="w3-container w3-margin w3-card-4">
-        <h2 class="w3-center">Weekly Timesheet</h2>
-        <form method="post" action="{% url 'project:weekly_timesheet_list' %}">
-            {% csrf_token %}
-            {{ formset.management_form }}
-            {{ formset.non_form_errors.as_ul }}
-            <table class="w3-table w3-bordered w3-striped w3-border w3-hoverable">
-                <thead>
-                    <tr class="w3-teal">
-                        <th>Project</th>
-                        <th>Task</th>
-                        <th>Monday</th>
-                        <th>Tuesday</th>
-                        <th>Wednesday</th>
-                        <th>Thursday</th>
-                        <th>Friday</th>
-                        <th>Saturday</th>
-                        <th>Sunday</th>
+   <br>
+    <form method="post" action="{% url 'project:weekly_timesheet_list' %}" class="w3-card-4">
+        {% csrf_token %}
+        
+        <table class="w3-table w3-bordered w3-striped w3-border w3-hoverable">
+            <thead>
+                <tr class="w3-blue-gray">
+                    <th class="w3-bar-item-shadow">Project</th>
+                    <th class="w3-bar-item-shadow">Task</th>
+                    <th class="w3-bar-item-shadow">Monday</th>
+                    <th class="w3-bar-item-shadow">Tuesday</th>
+                    <th class="w3-bar-item-shadow">Wednesday</th>
+                    <th class="w3-bar-item-shadow">Thursday</th>
+                    <th class="w3-bar-item-shadow">Friday</th>
+                    <th class="w3-bar-item-shadow">Saturday</th>
+                    <th class="w3-bar-item-shadow">Sunday</th>
+                    <th class="w3-bar-item-shadow">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formset.forms %}
+                    {{ formset.management_form }}
+                    {{ formset.non_form_errors.as_ul }}
+                    <tr>
+                        <td>{{ form.project }}</td>
+                        <td>{{ form.task }}</td>
+                        <td>{{ form.monday_hours }}</td>
+                        <td>{{ form.tuesday_hours }}</td>
+                        <td>{{ form.wednesday_hours }}</td>
+                        <td>{{ form.thursday_hours }}</td>
+                        <td>{{ form.friday_hours }}</td>
+                        <td>{{ form.saturday_hours }}</td>
+                        <td>{{ form.sunday_hours }}</td>
+                        {% comment %} note: delete is not working {% endcomment %}
+                        <td>
+                            <a href="#" id="remove-form-btn" name="remove-form-btn" class="w3-button">
+                                <span class="w3-text-red">
+                                <i class="fa fa-trash fa-2" aria-hidden="true"></i>{{ form.delete }}</span></a>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for form in formset.forms %}
-                        <tr>
-                            <td>{{ form.project }}</td>
-                            <td>{{ form.task }}</td>
-                            <td>{{ form.monday_hours }}</td>
-                            <td>{{ form.tuesday_hours }}</td>
-                            <td>{{ form.wednesday_hours }}</td>
-                            <td>{{ form.thursday_hours }}</td>
-                            <td>{{ form.friday_hours }}</td>
-                            <td>{{ form.saturday_hours }}</td>
-                            <td>{{ form.sunday_hours }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr class="w3-light-grey">
-                        <td colspan="2" class="w3-right-align"><strong>Subtotal Hours:</strong></td>
-                        <td>{{ subtotal.monday_hours }}</td>
-                        <td>{{ subtotal.tuesday_hours }}</td>
-                        <td>{{ subtotal.wednesday_hours }}</td>
-                        <td>{{ subtotal.thursday_hours }}</td>
-                        <td>{{ subtotal.friday_hours }}</td>
-                        <td>{{ subtotal.saturday_hours }}</td>
-                        <td>{{ subtotal.sunday_hours }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-            
-            <div class="w3-center w3-margin-top">
-                <button type="submit" class="w3-button w3-teal w3-round">Submit Timesheet</button>
-            </div>
-        </form>
-    </div>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="w3-light-grey">
+                    <td><strong>Grand Total</strong></td>
+                    <td><span id="grand_total">0.00</span></td>
+                    <td><span id="mon_tot" name="mon_tot" class="mon_tot"> </span></td>
+                    <td><span id="tue_tot" name="tue_tot" class="tue_tot"> </span></td>
+                    <td><span id="wed_tot" name="wed_tot" class="wed_tot"> </span></td>
+                    <td><span id="thu_tot" name="thu_tot" class="thu_tot"> </span></td>
+                    <td><span id="fri_tot" name="fri_tot" class="fri_tot"> </span></td>
+                    <td><span id="sat_tot" name="sat_tot" class="sat_tot"> </span></td>
+                    <td><span id="sun_tot" name="sun_tot" class="sun_tot"> </span></td>
+                </tr>
+            </tfoot>
+        </table>
+        <br>
+        <div class="w3-bar">
+            <button class="w3-bar-item w3-bar-item-shadow w3-block w3-text-red w3-fire-sans" style="font-size:16px"><strong>* total hours at last save:  {% for entry in weekly_timesheets %}{{ entry.total_hours }}{% endfor %}/40</strong></button>
+            <button type="submit" 
+                class="w3-bar-item w3-bar-item-shadow w3-block w3-btn w3-mobile w3-bebas-neue w3-margin-right w3-margin-left w3-red w3-right w3-xlarge">
+                <i class="fa fa-floppy-o" aria-hidden="true"></i> Submit</button>
+            <button class="w3-bar-item w3-bar-item-shadow w3-block w3-btn w3-mobile w3-bebas-neue w3-margin-right w3-margin-left w3-red w3-right w3-xlarge">
+                <i class="fa fa-cutlery" aria-hidden="true"></i> Expenses</button>
+            <button class="w3-bar-item w3-bar-item-shadow w3-block w3-btn w3-mobile w3-bebas-neue w3-margin-right w3-margin-left w3-blue-gray w3-right w3-xlarge">
+                <i class="fa fa-repeat" aria-hidden="true"></i> Reset</button>
+        </div>
+        <br/>
+    </form> 
+<!-- Add this JavaScript at the end of your HTML template -->
+<script>
+    function calculateColumnTotal(day, totalElementId) {
+        // Get all input elements for the specified day
+        const inputs = document.querySelectorAll(`input[name$="${day}_hours"]`);
+        let total = 0;
+    
+        inputs.forEach(input => {
+            // Convert value to a number and add to the total
+            const value = parseFloat(input.value);
+            if (!isNaN(value)) {
+                total += value;
+            }
+        });
+    
+        // Send the calculated total to the specified element
+        document.getElementById(totalElementId).textContent = total.toFixed(2);
+        calculateGrandTotal(); // Update grand total each time a column total is calculated
+    }
+    
+    function calculateGrandTotal() {
+        const totalIds = ["mon_tot", "tue_tot", "wed_tot", "thu_tot", "fri_tot", "sat_tot", "sun_tot"];
+        let grandTotal = 0;
+    
+        totalIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                const value = parseFloat(element.textContent);
+                if (!isNaN(value)) {
+                    grandTotal += value;
+                }
+            }
+        });
+    
+        const grandTotalElement = document.getElementById('grand_total');
+        if (grandTotalElement) {
+            grandTotalElement.textContent = grandTotal.toFixed(2);
+        }
+    }    
 
-    <br/>
-    <!-- Existing forms with the class "timesheet-form" -->
-    <h2>Weekly Timesheet</h2>
-    <ul>
-        {% for entry in weekly_timesheets %}
-            <li>WEEK{{ entry.week|date:"W" }}: {{ entry.total_hours }} hours</li>
-        {% endfor %}
-    </ul>
+    // Call this function whenever you want to calculate, for example on page load and on input change
+    document.addEventListener('DOMContentLoaded', () => {
+        const days = [
+            { day: "monday", totalElementId: "mon_tot" },
+            { day: "tuesday", totalElementId: "tue_tot" },
+            { day: "wednesday", totalElementId: "wed_tot" },
+            { day: "thursday", totalElementId: "thu_tot" },
+            { day: "friday", totalElementId: "fri_tot" },
+            { day: "saturday", totalElementId: "sat_tot" },
+            { day: "sunday", totalElementId: "sun_tot" }
+        ];
+        
+        days.forEach(({ day, totalElementId }) => {
+            // Calculate total on page load
+            calculateColumnTotal(day, totalElementId);
+    
+            // Add event listener to recalculate whenever an input in this column changes
+            document.querySelectorAll(`input[name$="${day}_hours"]`).forEach(input => {
+                input.addEventListener('input', () => calculateColumnTotal(day, totalElementId));
+            });
+        });
 
-    <ul>
-        {% for sheet in timesheets %}
-            <li>{{ sheet.date|date:"D M d, Y" }}: {{ sheet.project }}-{{ sheet.task }}</li>
-        {% endfor %}
-    </ul>
-
-    <p>
-        {% if previous_week %}
-        <a href="{% url 'project:weekly_timesheet' year=previous_week|date:'Y' week=previous_week|date:'W' %}"> 
-            Next week: {{ previous_week|date:"W" }} of year {{ previous_week|date:"Y" }}</a>
-        {% endif %}
-        {% if previous_week and next_week %}--{% endif %}
-        {% if next_week %}
-        <a href="{% url 'project:weekly_timesheet' year=next_week|date:'Y' week=next_week|date:'W' %}"> 
-            Next week: {{ next_week|date:"W" }} of year {{ next_week|date:"Y" }}</a>
-        {% endif %}
-    </p>
-    <h5>Weekly Summary (from the weekly model manager)</h5>
-    <ul>
-        {% for sheet in weekly_timesheets %}
-            <li>Start of the week: {{sheet.week|date:"l, jS F Y." }}</li>
-            <li> Total hours for the week:{{ sheet.total_hours }}</li>
-        {% endfor %}
-    </ul>
-</div>        
+        // Initial calculation for the grand total
+        calculateGrandTotal();
+    });
+    </script>
+    
+    
+    
 {% endblock %}

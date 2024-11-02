@@ -23,58 +23,55 @@ class CustomDecimalField(forms.DecimalField):
         super().__init__(*args, **kwargs)
 
 
-class BaseWeekTimesheetFormSet(BaseInlineFormSet):
+# class BaseWeekTimesheetFormSet(BaseInlineFormSet):
 
-    # def __init__(self, *args, weekly_timesheet_data=None, **kwargs):
-    #     super().__init__(*args, **kwargs)
+#     # def __init__(self, *args, weekly_timesheet_data=None, **kwargs):
+#     #     super().__init__(*args, **kwargs)
 
-    #     if weekly_timesheet_data:
-    #         print("Weekly timesheet data provided.")
-    #         for form, (project_id, timesheet_data) in zip(self.forms, weekly_timesheet_data.items()):
-    #             print(f"Processing project_id: {project_id}, timesheet_data: {timesheet_data}")
-    #             form.initial['project'] = project_id
-    #             form.initial['task'] = timesheet_data['task']
-    #             # Populate the weekday hours fields
-    #             for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'):
-    #                 form.initial[f'{day}_hours'] = timesheet_data[f'{day}_hours']
-    #                 print(f"Set initial data for {day}_hours: {timesheet_data[f'{day}_hours']}")
+#     #     if weekly_timesheet_data:
+#     #         print("Weekly timesheet data provided.")
+#     #         for form, (project_id, timesheet_data) in zip(self.forms, weekly_timesheet_data.items()):
+#     #             print(f"Processing project_id: {project_id}, timesheet_data: {timesheet_data}")
+#     #             form.initial['project'] = project_id
+#     #             form.initial['task'] = timesheet_data['task']
+#     #             # Populate the weekday hours fields
+#     #             for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'):
+#     #                 form.initial[f'{day}_hours'] = timesheet_data[f'{day}_hours']
+#     #                 print(f"Set initial data for {day}_hours: {timesheet_data[f'{day}_hours']}")
 
 
-    def save(self, user=None, week_start=None, commit=True):
-        print("Save method called!")
-        """
-        Saves the timesheet entries, one per day with the relevant hours.
-        `start_date` should be a Monday to correctly align the days.
-        """
-        if week_start is None:
-            raise ValueError("You must provide a week_start (Monday).")
+#     def save(self, user=None, week_start=None, commit=True):
+#         """
+#         Saves the timesheet entries, one per day with the relevant hours.
+#         `start_date` should be a Monday to correctly align the days.
+#         """
+#         if week_start is None:
+#             raise ValueError("You must provide a week_start (Monday).")
 
-        timesheet_entries = []
-        for form in self.forms:
-            if form.cleaned_data:
-                project = form.cleaned_data.get('project')
-                task = form.cleaned_data.get('task')
+#         timesheet_entries = []
+#         for form in self.forms:
+#             if form.cleaned_data:
+#                 project = form.cleaned_data.get('project')
+#                 task = form.cleaned_data.get('task')
                 
-                # Loop through each day of the week (Monday to Friday)
-                for i, day_field in enumerate(['monday_hours', 'tuesday_hours', 'wednesday_hours', 'thursday_hours', 'friday_hours', 'saturday_hours', 'sunday_hours']):
-                    print(day_field)
-                    hours = form.cleaned_data.get(day_field)
-                    print(hours)
-                    if hours:  # Only save if hours are entered
-                        date = week_start + timedelta(days=i)  # Calculate the correct date
-                        timesheet_entry = Timesheet(
-                            user=user,
-                            project=project,
-                            task=task,
-                            date=date,
-                            hours=hours
-                        )
-                        timesheet_entries.append(timesheet_entry)
+#                 # Loop through each day of the week (Monday to Friday)
+#                 for i, day_field in enumerate(['monday_hours', 'tuesday_hours', 'wednesday_hours', 'thursday_hours', 'friday_hours', 'saturday_hours', 'sunday_hours']):
+#                     hours = form.cleaned_data.get(day_field)
+#                     if hours:  # Only save if hours are entered
+#                         date = week_start + timedelta(days=i)  # Calculate the correct date
+#                         timesheet_entry = Timesheet(
+#                             user=user,
+#                             project=project,
+#                             task=task,
+#                             date=date,
+#                             hours=hours
+#                         )
+#                         timesheet_entries.append(timesheet_entry)
         
-        if commit:
-            Timesheet.objects.bulk_create(timesheet_entries)  # Save all entries at once
+#         if commit:
+#             Timesheet.objects.bulk_create(timesheet_entries)  # Save all entries at once
         
-        return timesheet_entries
+#         return timesheet_entries
 
 
 class ProjectForm(forms.ModelForm):
@@ -137,17 +134,18 @@ class TimesheetForm(forms.ModelForm):
     def __init__(self, *args, weekly_timesheet_data=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Populate initial values for each form from weekly_timesheet_data
         if weekly_timesheet_data:
-            project_task_key = (self.initial.get('project'), self.initial.get('task'))
-            timesheet_data = weekly_timesheet_data.get(project_task_key)
-
-            if timesheet_data:
-                for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
-                    day_hours = timesheet_data.get(f'{day}_hours')
-                    if day_hours is not None:
-                        self.fields[f'{day}_hours'].initial = day_hours
-    
+            project = self.initial.get('project')
+            task = self.initial.get('task')
+            self.fields['project'].initial = project
+            self.fields['task'].initial = task
+            days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            day_fields = [f'{day}_hours' for day in days]
+            for field, day in zip(day_fields, days):
+                day_hours = weekly_timesheet_data.get(f'{day}_hours')
+                if day_hours is not None:
+                    self.fields[field].initial = day_hours
+        
     def clean(self):
         cleaned_data = super().clean()
         # Add any additional validation for hours if needed here
