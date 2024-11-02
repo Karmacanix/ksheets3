@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
-from django.views.generic import ListView, UpdateView, WeekArchiveView
+from django.views.generic import ListView, UpdateView, WeekArchiveView, MonthArchiveView, DayArchiveView
 from django.views.generic.edit import CreateView, FormView
 from collections import defaultdict
 from .models import Project, Task, Timesheet
@@ -269,6 +269,51 @@ class TimesheetListView(ListView):
         return Timesheet.objects.filter(user=self.request.user).order_by('date')
     
 
+class WeeklyTimesheetList(ListView):
+    model = Timesheet
+    template_name = 'project/timesheet_list_weekly.html'
+    context_object_name = 'timesheets'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["weekly_timesheets"] = Timesheet.weekly.all()
+        return context
+    
+    def get_queryset(self):
+        # Fetch all timesheets for the user, grouped by week, including related project and task names
+        return Timesheet.objects.filter(user=self.request.user).order_by('-date')
+    
+
+class MonthlyTimesheetList(ListView):
+    model = Timesheet
+    template_name = 'project/timesheet_list_monthly.html'
+    context_object_name = 'timesheets'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["monthly_timesheets"] = Timesheet.monthly.all()
+        return context
+    
+    def get_queryset(self):
+        # Fetch all timesheets for the user, grouped by month, including related project and task names
+        return Timesheet.objects.filter(user=self.request.user).order_by('-date')
+    
+
+class DailyTimesheetList(ListView):
+    model = Timesheet
+    template_name = 'project/timesheet_list_daily.html'
+    context_object_name = 'timesheets'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['daily_timesheets'] = Timesheet.daily.all()
+        return context
+    
+    def get_queryset(self):
+        # Fetch all timesheets for the user, grouped by week, including related project and task names
+        return Timesheet.objects.filter(user=self.request.user).order_by('-date')
+
+
 class WeeklyTimesheetView(WeekArchiveView):
     model = Timesheet
     context_object_name = 'timesheets'
@@ -277,6 +322,75 @@ class WeeklyTimesheetView(WeekArchiveView):
     allow_future = True
     allow_empty=True
     template_name = 'project/timesheet_archive_week.html'
+    TimesheetFormSet = modelformset_factory(Timesheet, form=TimesheetForm, extra=0)
+
+    
+    def get_week_start(self):
+        year_week_key = str(self.kwargs["year"]) + "-W" + str(self.kwargs["week"])
+        week_start = datetime.strptime(year_week_key + '-1', "%Y-W%W-%w")
+        return week_start
+    
+    def get_weekly_timesheet_data(self, user, week_start):
+        weekly_data = {}
+        weekly_entries = Timesheet.objects.filter(user=user, start_of_week=week_start
+            ).values('project', 'task', 'date').annotate(total_hours=Sum('hours'))
+        for entry in weekly_entries:
+            project = entry['project']
+            task = entry['task']
+            date = entry['date']
+            total_hours = entry['total_hours']
+
+            if (project, task) not in weekly_data:
+                weekly_data[(project, task)] = {
+                    'project': project,
+                    'task': task,
+                    'monday_hours': None,
+                    'tuesday_hours': None,
+                    'wednesday_hours': None,
+                    'thursday_hours': None,
+                    'friday_hours': None,
+                    'saturday_hours': None,
+                    'sunday_hours': None,
+                }
+
+            day_name = date.strftime('%A').lower() + '_hours'
+            weekly_data[(project, task)][day_name] = total_hours
+            print(weekly_data)
+
+        return weekly_data
+
+    def get_weekly_timesheet_formsets(self, user, week_start):
+        weekly_timesheet_data = self.get_weekly_timesheet_data(user, week_start)
+        print("Weekly Timesheet Data: ", weekly_timesheet_data)
+        queryset = self.get_queryset()
+        formset = self.TimesheetFormSet(queryset=queryset, initial=weekly_timesheet_data)
+
+        return formset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        week_start = self.get_week_start()
+        context["weekly_timesheets"] = Timesheet.weekly.filter(start_of_week=week_start)
+        user = self.request.user
+        formset = self.get_weekly_timesheet_formsets(user, week_start)
+        print("Formset: ", formset)
+        context["formset"] = formset
+        return context  
+    
+    def get_queryset(self):
+        # Fetch all timesheets for the user, grouped by week, including related project and task names
+        week_start = self.get_week_start()
+        return Timesheet.objects.filter(user=self.request.user, start_of_week=week_start).order_by('date')
+
+
+class MonthlyTimesheetView(MonthArchiveView):
+    model = Timesheet
+    context_object_name = 'timesheets'
+    date_field = 'date'
+    month_format = "%M"
+    allow_future = True
+    allow_empty = True
+    template_name = 'project/timesheet_archive_month.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -286,9 +400,9 @@ class WeeklyTimesheetView(WeekArchiveView):
         return context  
     
     def get_queryset(self):
-        # Fetch all timesheets for the user, grouped by week, including related project and task names
-        b = str(self.kwargs["year"]) + "-W" + str(self.kwargs["week"])
-        r = datetime.strptime(b + '-1', "%Y-W%W-%w")
-        return Timesheet.objects.filter(user=self.request.user, start_of_week=r).order_by('date')
+        # Fetch all timesheets for the user, grouped by month, including related project and task names
+        # b = str(self.kwargs["year"]) + "-" + str(self.kwargs["month"])
+        # r = datetime.strptime(b + '-1', "%Y-%M")
+        return Timesheet.objects.filter(user=self.request.user).order_by('date')
     
     

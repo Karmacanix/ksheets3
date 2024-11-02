@@ -8,73 +8,111 @@
 {% block content %}
 <!-- Header -->
 <div class="w3-container w3-margin-top">
-  <header class="w3-black w3-opacity w3-padding-16">
-    <h1 class="w3-margin">Your weekly timesheet</h1>
-  </header>
-  <br/>
-
-    <div class="w3-bar w3-border w3-indigo w3-card-4">
-      <a href="{% url 'project:timesheet_list' %}" style="width:10%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-indigo"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
-      <a href="#" style="width:80%; font-size: 24px;" class="w3-bar-item w3-block w3-button w3-mobile w3-bebas-neue w3-pale-blue">Week starting: {{ week|date:"l, jS F Y." }}</a>
-      <a href="#" style="width:10%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-indigo" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
+    <header class="w3-black w3-opacity w3-padding-16">
+        <h1 class="w3-margin">Your weekly timesheet</h1>
+    </header>
+    <br/>
+    <div class="w3-bar w3-border w3-red w3-card-4">
+        {% if previous_week %}
+            <a href="{% url 'project:weekly_timesheet' year=previous_week|date:'Y' week=previous_week|date:'W' %}"
+            style="width:15%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-red"> 
+            <i class="fa fa-arrow-left" aria-hidden="true"></i> Previous Week ({{ previous_week|date:"W" }})</a>
+        {% endif %}
+        <a href="#" style="width:70%; font-size: 24px;" class="w3-bar-item w3-block w3-button w3-mobile w3-bebas-neue w3-pale-red">
+            Week({{ week|date:"W" }}) Starting: {{ week|date:"l, jS F Y." }}</a>
+        {% if next_week %}
+            <a href="{% url 'project:weekly_timesheet' year=next_week|date:'Y' week=next_week|date:'W' %}"
+            style="width:15%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-red"> 
+            <i class="fa fa-arrow-right" aria-hidden="true"></i> Next Week ({{ next_week|date:"W" }})</a>
+        {% endif %}
+    </div>
+    <div class="w3-container w3-margin w3-card-4">
+        <h2 class="w3-center">Weekly Timesheet</h2>
+        <form method="post" action="{% url 'project:weekly_timesheet_list' %}">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            {{ formset.non_form_errors.as_ul }}
+            <table class="w3-table w3-bordered w3-striped w3-border w3-hoverable">
+                <thead>
+                    <tr class="w3-teal">
+                        <th>Project</th>
+                        <th>Task</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                        <th>Saturday</th>
+                        <th>Sunday</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in formset.forms %}
+                        <tr>
+                            <td>{{ form.project }}</td>
+                            <td>{{ form.task }}</td>
+                            <td>{{ form.monday_hours }}</td>
+                            <td>{{ form.tuesday_hours }}</td>
+                            <td>{{ form.wednesday_hours }}</td>
+                            <td>{{ form.thursday_hours }}</td>
+                            <td>{{ form.friday_hours }}</td>
+                            <td>{{ form.saturday_hours }}</td>
+                            <td>{{ form.sunday_hours }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="w3-light-grey">
+                        <td colspan="2" class="w3-right-align"><strong>Subtotal Hours:</strong></td>
+                        <td>{{ subtotal.monday_hours }}</td>
+                        <td>{{ subtotal.tuesday_hours }}</td>
+                        <td>{{ subtotal.wednesday_hours }}</td>
+                        <td>{{ subtotal.thursday_hours }}</td>
+                        <td>{{ subtotal.friday_hours }}</td>
+                        <td>{{ subtotal.saturday_hours }}</td>
+                        <td>{{ subtotal.sunday_hours }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            
+            <div class="w3-center w3-margin-top">
+                <button type="submit" class="w3-button w3-teal w3-round">Submit Timesheet</button>
+            </div>
+        </form>
     </div>
 
-  <br/>
-  <!-- Existing forms with the class "timesheet-form" -->
-  <h2>Weekly Timesheet</h2>
-  <ul>
-      {% for entry in weekly_timesheets %}
-          <li>WEEK{{ entry.week|date:"W" }}: {{ entry.total_hours }} hours</li>
-      {% endfor %}
-  </ul>
-
-  <div class="w3-row">
-    <h3>Daily Timesheets View</h3>
-    <table class="w3-table-all w3-hoverable w3-card-4 w3-third">
-        <thead>
-            <tr class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue">
-                <th>ID</th>
-                <th>user</th>
-                <th>project</th>
-                <th>task</th>
-                <th>date</th>
-                <th>hours</th>
-                <th>week start</th>               
-            </tr>
-        </thead>
-        {% for sheet in timesheets %}
-            <tbody>
-                <tr>
-                    <td>{{ sheet.id }}</td>
-                    <td>{{ sheet.user }}</td>
-                    <td>{{ sheet.project }}</td>
-                    <td>{{ sheet.task }}</td>
-                    <td>{{ sheet.date }}</td>
-                    <td>{{ sheet.hours }}</td>
-                    <td>{{ sheet.start_of_week }}</td>               
-                </tr>
-            </tbody>
+    <br/>
+    <!-- Existing forms with the class "timesheet-form" -->
+    <h2>Weekly Timesheet</h2>
+    <ul>
+        {% for entry in weekly_timesheets %}
+            <li>WEEK{{ entry.week|date:"W" }}: {{ entry.total_hours }} hours</li>
         {% endfor %}
-    </table>
-</div>
-<h2>Week: {{ week|date:'W' }} Date: {{ week|date:"D M d, Y" }}</h2>
+    </ul>
 
-<ul>
-    {% for sheet in timesheets %}
-        <li>{{ sheet.date|date:"D M d, Y" }}: {{ sheet.project }}-{{ sheet.task }}</li>
-    {% endfor %}
-</ul>
+    <ul>
+        {% for sheet in timesheets %}
+            <li>{{ sheet.date|date:"D M d, Y" }}: {{ sheet.project }}-{{ sheet.task }}</li>
+        {% endfor %}
+    </ul>
 
-<p>
-    {% if previous_week %}
-    <a href="{% url 'project:weekly_timesheet' year=previous_week|date:'Y' week=previous_week|date:'W' %}"> 
-        Next week: {{ previous_week|date:"W" }} of year {{ previous_week|date:"Y" }}</a>
-    {% endif %}
-    {% if previous_week and next_week %}--{% endif %}
-    {% if next_week %}
-    <a href="{% url 'project:weekly_timesheet' year=next_week|date:'Y' week=next_week|date:'W' %}"> 
-        Next week: {{ next_week|date:"W" }} of year {{ next_week|date:"Y" }}</a>
-    {% endif %}
-</p>
-</div>
+    <p>
+        {% if previous_week %}
+        <a href="{% url 'project:weekly_timesheet' year=previous_week|date:'Y' week=previous_week|date:'W' %}"> 
+            Next week: {{ previous_week|date:"W" }} of year {{ previous_week|date:"Y" }}</a>
+        {% endif %}
+        {% if previous_week and next_week %}--{% endif %}
+        {% if next_week %}
+        <a href="{% url 'project:weekly_timesheet' year=next_week|date:'Y' week=next_week|date:'W' %}"> 
+            Next week: {{ next_week|date:"W" }} of year {{ next_week|date:"Y" }}</a>
+        {% endif %}
+    </p>
+    <h5>Weekly Summary (from the weekly model manager)</h5>
+    <ul>
+        {% for sheet in weekly_timesheets %}
+            <li>Start of the week: {{sheet.week|date:"l, jS F Y." }}</li>
+            <li> Total hours for the week:{{ sheet.total_hours }}</li>
+        {% endfor %}
+    </ul>
+</div>        
 {% endblock %}

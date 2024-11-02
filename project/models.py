@@ -57,7 +57,7 @@ class WeeklyTimesheetManager(models.Manager):
             .annotate(week=TruncWeek('date'))
             .values('week')
             .annotate(total_hours=Sum('hours'))
-            .order_by('week')
+            .order_by('-week')
         )
 
 class MonthlyTimesheetManager(models.Manager):
@@ -68,7 +68,7 @@ class MonthlyTimesheetManager(models.Manager):
             .annotate(month=TruncMonth('date'))
             .values('month')
             .annotate(total_hours=Sum('hours'))
-            .order_by('month')
+            .order_by('-month')
         )
 
 class DailyTimesheetManager(models.Manager):
@@ -79,7 +79,7 @@ class DailyTimesheetManager(models.Manager):
             .annotate(day=TruncDay('date'))
             .values('day')
             .annotate(total_hours=Sum('hours'))
-            .order_by('day')
+            .order_by('-day')
         )
 
 class Timesheet(models.Model):

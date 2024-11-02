@@ -1,0 +1,48 @@
+<!-- templates/timesheet/timesheet_formset.html -->
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Monthly Timesheets" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+    <header class="w3-black w3-opacity w3-padding-16">
+        <h1 class="w3-margin">Your monthly timesheets</h1>
+    </header>
+    <br>
+    <div class="w3-row" style="font-size:20px">
+        {% if monthly_timesheets %}
+        <table class="w3-table-all w3-hoverable w3-card-4 w3-half">
+            <thead>
+                <tr class="w3-topbar w3-bottombar w3-border-red w3-pale-red">
+                    <th>Open Timesheet</th>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Total Hours</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            {% for entry in monthly_timesheets %}
+                <tbody>
+                    <tr>
+                        <td><a href="{% url 'project:monthly_timesheet' year=entry.month|date:'Y' month=entry.month|date:'M' %}"
+                            class="w3-button w3-teal w3-padding w3-hover-red w3-bar-item-shadow">
+                            {{ entry.month|date:'Y' }}-{{ entry.month|date:'F' }}</a></td>
+                        <td>{{ entry.month|date:'Y' }}</td>
+                        <td>{{ entry.month|date:'F' }}</td>
+                        <td>{{ entry.total_hours }}</td>
+                        <td><span class="w3-tag">TBA<span></td>                        
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+        {% else %}
+            <h3>No weekly timesheets found.</h3>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

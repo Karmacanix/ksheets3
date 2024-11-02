@@ -1,0 +1,50 @@
+<!-- templates/timesheet/timesheet_formset.html -->
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Weekly Timesheets" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+    <header class="w3-black w3-opacity w3-padding-16">
+        <h1 class="w3-margin">Your weekly timesheets</h1>
+    </header>
+    <br>
+    <div class="w3-row" style="font-size:20px">
+        {% if weekly_timesheets %}
+        <table class="w3-table-all w3-hoverable w3-card-4 w3-half">
+            <thead>
+                <tr class="w3-topbar w3-bottombar w3-border-red w3-pale-red">
+                    <th>Open Timesheet</th>
+                    <th>Year</th>
+                    <th>Week</th>
+                    <th>Week Starts</th>
+                    <th>Total Hours</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            {% for entry in weekly_timesheets %}
+                <tbody>
+                    <tr>
+                        <td><a href="{% url 'project:weekly_timesheet' year=entry.week|date:'Y' week=entry.week|date:'W' %}"
+                            class="w3-button w3-teal w3-padding w3-hover-red w3-bar-item-shadow">
+                            {{ entry.week|date:'Y' }}-W{{ entry.week|date:'W' }}</a></td>
+                        <td>{{ entry.week|date:'Y' }}</td>
+                        <td>{{ entry.week|date:'W' }}</td>
+                        <td>{{ entry.week|date:'jS F Y' }}</td>
+                        <td>{{ entry.total_hours }} /40</td>
+                        <td><span class="w3-tag">TBA<span></td>                        
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+        {% else %}
+            <h3>No weekly timesheets found.</h3>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

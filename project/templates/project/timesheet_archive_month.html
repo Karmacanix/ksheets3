@@ -1,0 +1,80 @@
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+{% block head_title %}{% trans "Monthly Timesheets" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+  <header class="w3-black w3-opacity w3-padding-16">
+    <h1 class="w3-margin">Your monthly timesheets</h1>
+  </header>
+  <br/>
+
+    <div class="w3-bar w3-border w3-indigo w3-card-4">
+      <a href="{% url 'project:timesheet_list' %}" style="width:10%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-indigo"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
+      <a href="#" style="width:80%; font-size: 24px;" class="w3-bar-item w3-block w3-button w3-mobile w3-bebas-neue w3-pale-blue">month: {{ month|date:"F Y." }}</a>
+      <a href="#" style="width:10%; font-size: 24px;" class="w3-bar-item w3-bar-item-shadow w3-block w3-button w3-mobile w3-bebas-neue w3-indigo" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
+    </div>
+
+  <br/>
+  <!-- Existing forms with the class "timesheet-form" -->
+  <h2>Monthly Timesheet</h2>
+  <ul>
+      {% for entry in monthly_timesheets %}
+          <li>{{ entry.month|date:"F" }}: {{ entry.total_hours }} hours</li>
+      {% endfor %}
+  </ul>
+
+  <div class="w3-row">
+    <h3>Monthly Timesheets View</h3>
+    <table class="w3-table-all w3-hoverable w3-card-4 w3-third">
+        <thead>
+            <tr class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue">
+                <th>ID</th>
+                <th>user</th>
+                <th>project</th>
+                <th>task</th>
+                <th>date</th>
+                <th>hours</th>
+                <th>month start</th>               
+            </tr>
+        </thead>
+        {% for sheet in timesheets %}
+            <tbody>
+                <tr>
+                    <td>{{ sheet.id }}</td>
+                    <td>{{ sheet.user }}</td>
+                    <td>{{ sheet.project }}</td>
+                    <td>{{ sheet.task }}</td>
+                    <td>{{ sheet.date }}</td>
+                    <td>{{ sheet.hours }}</td>
+                    <td>{{ sheet.start_of_month }}</td>               
+                </tr>
+            </tbody>
+        {% endfor %}
+    </table>
+</div>
+<h2>{{ month|date:'F' }} Date: {{ month|date:"D F d, Y" }}</h2>
+
+<ul>
+    {% for sheet in timesheets %}
+        <li>{{ sheet.date|date:"D F d, Y" }}: {{ sheet.project }}-{{ sheet.task }}</li>
+    {% endfor %}
+</ul>
+
+<p>
+    {% if previous_month %}
+    <a href="{% url 'project:monthly_timesheet' year=previous_month|date:'Y' month=previous_month|date:'F' %}"> 
+        Next month: {{ previous_month|date:"F" }} of year {{ previous_month|date:"Y" }}</a>
+    {% endif %}
+    {% if previous_month and next_month %}--{% endif %}
+    {% if next_month %}
+    <a href="{% url 'project:monthly_timesheet' year=next_month|date:'Y' month=next_month|date:'F' %}"> 
+        Next month: {{ next_month|date:"F" }} of year {{ next_month|date:"Y" }}</a>
+    {% endif %}
+</p>
+</div>
+{% endblock %}

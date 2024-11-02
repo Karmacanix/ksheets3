@@ -137,21 +137,53 @@ class TimesheetForm(forms.ModelForm):
     def __init__(self, *args, weekly_timesheet_data=None, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Populate initial values for each form from weekly_timesheet_data
         if weekly_timesheet_data:
-            print("Weekly timesheet data provided.")
-            for form, (project_id, timesheet_data) in zip(self.forms, weekly_timesheet_data.items()):
-                print(f"Processing project_id: {project_id}, timesheet_data: {timesheet_data}")
-                form.initial['project'] = project_id
-                form.initial['task'] = timesheet_data['task']
-                # Populate the weekday hours fields
-                for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'):
-                    form.initial[f'{day}_hours'] = timesheet_data[f'{day}_hours']
-                    print(f"Set initial data for {day}_hours: {timesheet_data[f'{day}_hours']}")
+            project_task_key = (self.initial.get('project'), self.initial.get('task'))
+            timesheet_data = weekly_timesheet_data.get(project_task_key)
+
+            if timesheet_data:
+                for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+                    day_hours = timesheet_data.get(f'{day}_hours')
+                    if day_hours is not None:
+                        self.fields[f'{day}_hours'].initial = day_hours
     
     def clean(self):
         cleaned_data = super().clean()
         # Add any additional validation for hours if needed here
         return cleaned_data
     
+    def calculate_date_for_day(day, week_start):
+        days_offset = {
+            'monday': 0,
+            'tuesday': 1,
+            'wednesday': 2,
+            'thursday': 3,
+            'friday': 4,
+            'saturday': 5,
+            'sunday': 6,
+        }
+        if day.lower() not in days_offset:
+            raise ValueError("Day must be one of: 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'")
+
+        return week_start + timedelta(days=days_offset[day.lower()])
+
+    
     def save(self, commit=True):
-        return super().save(commit=commit)
+        instance = super().save(commit=False)
+
+        # Only save if hours are entered for any day
+        if commit:
+            # Get or create timesheet records for each weekday
+            for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+                day_hours = self.cleaned_data.get(f'{day}_hours')
+                if day_hours:
+                    # Calculate the date for each day of the week
+                    date = self.calculate_date_for_day(day, instance.start_of_week)
+                    Timesheet.objects.update_or_create(
+                        user=instance.user,
+                        project=instance.project,
+                        task=instance.task,
+                        date=date,
+                        defaults={'hours': day_hours}
+                    )
