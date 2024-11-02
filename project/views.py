@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime, date
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.db.models.functions import TruncWeek, TruncYear, TruncMonth, TruncDay
 from django.db.models import Count, Sum
 from django.db.models.query import QuerySet
 from django.db import transaction
@@ -9,7 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
-from django.views.generic import ListView, UpdateView
+from django.views.generic import ListView, UpdateView, WeekArchiveView
 from django.views.generic.edit import CreateView, FormView
 from collections import defaultdict
 from .models import Project, Task, Timesheet
@@ -249,4 +250,45 @@ def timesheet_list_view(request):
         'next_page_number': paginated_weeks.next_page_number() if paginated_weeks.has_next() else None,
         'previous_page_number': paginated_weeks.previous_page_number() if paginated_weeks.has_previous() else None
     }
-    return render(request, 'project/timesheet_list.html', context)
+
+
+class TimesheetListView(ListView):
+    model = Timesheet
+    template_name = 'project/timesheet_listview.html'
+    context_object_name = 'timesheets'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['daily_timesheets'] = Timesheet.daily.all()
+        context["weekly_timesheets"] = Timesheet.weekly.all()
+        context["monthly_timesheets"] = Timesheet.monthly.all()
+        return context
+    
+    def get_queryset(self):
+        # Fetch all timesheets for the user, grouped by week, including related project and task names
+        return Timesheet.objects.filter(user=self.request.user).order_by('date')
+    
+
+class WeeklyTimesheetView(WeekArchiveView):
+    model = Timesheet
+    context_object_name = 'timesheets'
+    date_field = 'date'
+    week_format = "%W"
+    allow_future = True
+    allow_empty=True
+    template_name = 'project/timesheet_archive_week.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['daily_timesheets'] = Timesheet.daily.all()
+        context["weekly_timesheets"] = Timesheet.weekly.all()
+        context["monthly_timesheets"] = Timesheet.monthly.all()
+        return context  
+    
+    def get_queryset(self):
+        # Fetch all timesheets for the user, grouped by week, including related project and task names
+        b = str(self.kwargs["year"]) + "-W" + str(self.kwargs["week"])
+        r = datetime.strptime(b + '-1', "%Y-W%W-%w")
+        return Timesheet.objects.filter(user=self.request.user, start_of_week=r).order_by('date')
+    
+    

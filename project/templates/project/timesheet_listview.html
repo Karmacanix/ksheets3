@@ -1,0 +1,89 @@
+<!-- templates/timesheet/timesheet_formset.html -->
+{% extends "mysite/site-base.html" %}
+
+{% load static %}
+{% load account %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Timesheets" %}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="w3-container w3-margin-top">
+    <header class="w3-black w3-opacity w3-padding-16">
+        <h1 class="w3-margin">Your timesheets</h1>
+    </header>
+    <br>
+    <div class="w3-row">
+        <h2>Timesheet Lists</h2>
+    </div>
+    <div class="w3-row">
+        <div class="w3-col l4">
+            <div class="w3-card-4 w3-padding">
+                <h3>Monthly Timesheets</h3>
+                <ul>
+                    {% for entry in monthly_timesheets %}
+                        <li>{{ entry.month|date:"F Y" }}: {{ entry.total_hours }} hours</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="w3-col l4 w3-padding">
+            <div class="w3-card-4 w3-padding">
+                {% if weekly_timesheets %}
+                    <h3>Weekly Timesheets View</h3>
+                    <ul>
+                        {% for entry in weekly_timesheets %}
+                            <li><a href="{% url 'project:weekly_timesheet' year=entry.week|date:'Y' week=entry.week|date:'W' %}"> WEEK{{ entry.week|date:"W" }}: {{ entry.total_hours }} hours</a></li>
+                            <li>Year:{{ entry.week|date:'Y' }}  Week:{{ entry.week|date:'W' }} Val:{{ entry.week }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <h3> No timesheets available. </h3>
+                {% endif %}
+            </div>
+        </div>
+        <div class="w3-col l4 w3-padding">
+            <div class="w3-card-4 w3-padding">
+                <h3>Daily Timesheets View</h3>
+                <ul>
+                    {% for entry in daily_timesheets %}
+                        <li>Date: {{ entry.day|date:"d M D" }}: {{ entry.total_hours }} hours</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="w3-row">
+        <h3>Daily Timesheets View</h3>
+        <table class="w3-table-all w3-hoverable w3-card-4 w3-third">
+            <thead>
+                <tr class="w3-topbar w3-bottombar w3-border-blue w3-pale-blue">
+                    <th>ID</th>
+                    <th>user</th>
+                    <th>project</th>
+                    <th>task</th>
+                    <th>date</th>
+                    <th>hours</th>
+                    <th>week start</th>               
+                </tr>
+            </thead>
+            {% for sheet in timesheets %}
+                <tbody>
+                    <tr>
+                        <td>{{ sheet.id }}</td>
+                        <td>{{ sheet.user }}</td>
+                        <td>{{ sheet.project }}</td>
+                        <td>{{ sheet.task }}</td>
+                        <td>{{ sheet.date }}</td>
+                        <td>{{ sheet.hours }}</td>
+                        <td>{{ sheet.start_of_week }}</td>               
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+    </div>
+    
+
+</div>
+{% endblock %}
